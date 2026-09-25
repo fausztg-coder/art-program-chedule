@@ -254,7 +254,7 @@ function readClasses(rows, issue) {
 function readActivities(rows, issue) {
   const activities = [];
   const byKey = new Map();
-  const ids = new Set();
+  const ids = new Set(["all"]); // reserved: the UI's "Mind" filter value
   let paletteIndex = 0;
   for (const row of rows) {
     const name = row["Foglalkozás"];

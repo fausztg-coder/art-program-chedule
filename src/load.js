@@ -73,7 +73,8 @@ function fetchSnapshot(config, fetch) {
     if (!res.ok) throw new Error(`snapshot: HTTP ${res.status}`);
     const data = await res.json();
     const valid =
-      data && data.version === MODEL_VERSION && data.settings && Array.isArray(data.days) && Array.isArray(data.periods) &&
+      data && data.version === MODEL_VERSION && typeof data.settings === "object" && data.settings !== null &&
+      Array.isArray(data.days) && Array.isArray(data.periods) && data.periods.length > 0 &&
       Array.isArray(data.classes) && data.classes.length > 0 && Array.isArray(data.activities) &&
       Array.isArray(data.slots) && Array.isArray(data.issues);
     if (!valid) throw new Error("snapshot: unexpected format");

@@ -32,15 +32,17 @@ export function normalizeSelection(model, { cls, act }) {
   return { cls: validCls, act: validAct };
 }
 
-// Precedence: URL, then stored selection, then the first class.
+// Precedence per field: URL, then stored selection, then the first class / all.
+// A valid URL class without foglalkozas means all; the stored activity is only
+// used together with the stored class.
 export function resolveSelection(model, { query = {}, stored = null } = {}) {
   if (model.classes.includes(query.osztaly)) {
     return normalizeSelection(model, { cls: query.osztaly, act: query.foglalkozas || ALL });
   }
-  if (stored && model.classes.includes(stored.osztaly)) {
-    return normalizeSelection(model, { cls: stored.osztaly, act: stored.foglalkozas || ALL });
-  }
-  return normalizeSelection(model, { cls: model.classes[0], act: ALL });
+  const fromStore = Boolean(stored && model.classes.includes(stored.osztaly));
+  const cls = fromStore ? stored.osztaly : model.classes[0];
+  const act = query.foglalkozas || (fromStore && stored.foglalkozas) || ALL;
+  return normalizeSelection(model, { cls, act });
 }
 
 // A new grade keeps the letter if that class exists, else takes the grade's first class.
@@ -58,9 +60,10 @@ export function selectActivity(model, sel, act) {
   return normalizeSelection(model, { cls: sel.cls, act });
 }
 
+// Tolerates hand-typed values: "4. A" → "4.a".
 export function readQuery(search) {
   const params = new URLSearchParams(search);
-  const get = (key) => (params.get(key) || "").trim().toLowerCase();
+  const get = (key) => (params.get(key) || "").normalize("NFC").replace(/\s+/g, "").toLowerCase();
   return { osztaly: get("osztaly"), foglalkozas: get("foglalkozas") };
 }
 

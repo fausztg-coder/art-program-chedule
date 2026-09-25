@@ -391,6 +391,11 @@ test("slugify", () => {
   assert.equal(slugify("Nyitott világ"), "nyitott-vilag");
 });
 
+test("the id 'all' is reserved for the UI's Mind filter", () => {
+  const model = buildOk(withTab("foglalkozastipusok", [["Foglalkozás", "Szín"], ["All", ""], ["Balett", ""]]));
+  assert.deepEqual(model.activities.map((a) => a.id), ["all-2", "balett"]);
+});
+
 test("activity ids stay unique when names share a slug", () => {
   const model = buildOk(withTab("foglalkozastipusok", [["Foglalkozás", "Szín"], ["Kép-zés", ""], ["Kép zés", ""]]));
   assert.deepEqual(model.activities.map((a) => a.id), ["kep-zes", "kep-zes-2"]);

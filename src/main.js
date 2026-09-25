@@ -40,6 +40,8 @@ const COPY = {
 };
 
 const COPIED_MS = 1800;
+// Colours are validated by buildModel; checked again here because they go into
+// style attributes unescaped.
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 
@@ -142,7 +144,7 @@ function renderControls() {
 function chip(id, name, color, count) {
   return (
     `<button type="button" class="chip" aria-pressed="${sel.act === id}" data-activity="${esc(id)}">` +
-    `<span class="dot" style="--c:${color}" aria-hidden="true"></span>${esc(name)} <span class="n">${COPY.count(count)}</span></button>`
+    `<span class="dot" style="--c:${color}" aria-hidden="true"></span><span class="name">${esc(name)}</span> <span class="n">${COPY.count(count)}</span></button>`
   );
 }
 
@@ -170,17 +172,19 @@ function card(s, view) {
   const dim = sel.act !== ALL && sel.act !== s.activityId;
   const meta = [s.teacher, s.room].filter(Boolean).join(" · ");
   const qmark = s.uncertain ? `<span class="qmark" role="img" aria-label="${COPY.uncertain}" title="${COPY.uncertain}">?</span>` : "";
+  const nameId = `${view}-name-${i}`;
   let note = "";
   if (s.note) {
     const open = openNotes.has(i);
     const id = `${view}-note-${i}`;
+    // aria-describedby tells the identical toggle labels apart.
     note =
-      `<button type="button" class="c-note-btn" aria-expanded="${open}" aria-controls="${id}" data-note="${i}">${s.uncertain ? COPY.why : COPY.note}</button>` +
+      `<button type="button" class="c-note-btn" aria-expanded="${open}" aria-controls="${id}" aria-describedby="${nameId}" data-note="${i}">${s.uncertain ? COPY.why : COPY.note}</button>` +
       `<p class="c-note" id="${id}"${open ? "" : " hidden"}>${esc(s.note)}</p>`;
   }
   return (
     `<div class="card${s.uncertain ? " unc" : ""}${dim ? " dim" : ""}" style="--c:${colorOf(s.activityId)}">` +
-    `<div class="c-name"><span>${esc(s.activity)}</span>${qmark}</div>` +
+    `<div class="c-name"><span id="${nameId}">${esc(s.activity)}</span>${qmark}</div>` +
     (meta ? `<div class="c-meta">${esc(meta)}</div>` : "") +
     `${note}</div>`
   );
@@ -315,23 +319,39 @@ document.addEventListener("click", (e) => {
 // ---------------------------------------------------------------------------
 // Start
 
+// The grid scrolls sideways between 641 and 760 px. Make it focusable only
+// then, so keyboard users can scroll it without an extra tab stop otherwise.
+function watchGridScroll() {
+  const region = $("gridScroll");
+  const update = () => {
+    if (region.scrollWidth > region.clientWidth) region.tabIndex = 0;
+    else region.removeAttribute("tabindex");
+  };
+  if ("ResizeObserver" in window) new ResizeObserver(update).observe(region);
+  update();
+}
+
 async function start() {
-  let result;
+  const main = document.querySelector("main");
   try {
-    result = await loadData(config, { mode: pickMode(config, location.search) });
+    const result = await loadData(config, { mode: pickMode(config, location.search) });
+    if (result.fallbackReason) console.warn(`Showing the snapshot: ${result.fallbackReason}`);
+    setModel(result.model);
+    sel = resolveSelection(model, { query: readQuery(location.search), stored: loadStored() });
+    renderMeta(result);
+    render();
+    $("content").hidden = false;
+    watchGridScroll();
   } catch (err) {
+    // Also covers a snapshot that loads but cannot be rendered.
     console.error(`Timetable could not be loaded: ${err.message}`);
-    $("loading").hidden = true;
+    model = null;
+    $("content").hidden = true;
     $("fatal").hidden = false;
-    return;
+  } finally {
+    $("loading").hidden = true;
+    main.removeAttribute("aria-busy");
   }
-  if (result.fallbackReason) console.warn(`Showing the snapshot: ${result.fallbackReason}`);
-  setModel(result.model);
-  sel = resolveSelection(model, { query: readQuery(location.search), stored: loadStored() });
-  renderMeta(result);
-  render();
-  $("loading").hidden = true;
-  $("content").hidden = false;
 }
 
 start();

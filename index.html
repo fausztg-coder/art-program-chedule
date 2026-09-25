@@ -20,7 +20,7 @@
     <h1>Délutáni művészeti foglalkozások</h1>
   </header>
 
-  <main class="stack">
+  <main class="stack" aria-busy="true">
     <div class="loading" id="loading">
       <p class="loading-text" role="status">Betöltés…</p>
       <div class="skeleton" aria-hidden="true">
@@ -49,7 +49,7 @@
         </div>
       </section>
 
-      <div class="grid-scroll"><table class="week" id="week" aria-label="Heti órarend"></table></div>
+      <div class="grid-scroll" id="gridScroll" role="region" aria-label="Heti órarend"><table class="week" id="week" aria-label="Heti órarend"></table></div>
       <div class="daylist" id="daylist"></div>
 
       <section class="summary" aria-labelledby="sum-heading">

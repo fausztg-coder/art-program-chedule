@@ -136,7 +136,15 @@ test("rejects when the snapshot also fails, keeping both reasons", async () => {
 });
 
 test("rejects a snapshot of an unexpected format", async () => {
-  for (const body of [JSON.stringify({ ...SNAPSHOT, version: 2 }), JSON.stringify({ ...SNAPSHOT, classes: [] }), "[]"]) {
+  const variants = [
+    { ...SNAPSHOT, version: 2 },
+    { ...SNAPSHOT, classes: [] },
+    { ...SNAPSHOT, periods: [] },
+    { ...SNAPSHOT, settings: null },
+    { ...SNAPSHOT, issues: undefined },
+    [],
+  ];
+  for (const body of variants.map((v) => JSON.stringify(v))) {
     const { fetch } = fakeFetch({ "data/snapshot.json": () => new Response(body, { status: 200 }) });
     await assert.rejects(loadData(BASE_CONFIG, { mode: "snapshot", fetch }), /snapshot: unexpected format/);
   }
