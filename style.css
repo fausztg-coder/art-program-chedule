@@ -1,0 +1,108 @@
+/* Design tokens and components from reference/prototype.html. */
+:root{
+  --bg:#f2f5f8; --surface:#ffffff; --surface-2:#e8edf3; --ink:#17202b; --muted:#566374;
+  --line:#d6dde6; --accent:#1e4d7e; --accent-ink:#ffffff; --warn:#8a5200; --warn-bg:#fff3dc;
+  --focus:#2b6cb0; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141b; --surface:#171f29; --surface-2:#202a36; --ink:#e6ebf1; --muted:#9aa7b7;
+    --line:#2b3644; --accent:#86b6ea; --accent-ink:#0c1520; --warn:#f2b866; --warn-bg:#2e2412;
+    --focus:#86b6ea; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#171f29; --surface-2:#202a36; --ink:#e6ebf1; --muted:#9aa7b7;
+  --line:#2b3644; --accent:#86b6ea; --accent-ink:#0c1520; --warn:#f2b866; --warn-bg:#2e2412;
+  --focus:#86b6ea; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:22px 48px;display:flex;flex-direction:column;gap:20px}
+.stack{display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;text-wrap:balance;margin:0}
+h1{font-size:clamp(24px,4vw,32px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;min-height:1.45em}
+header{display:flex;flex-direction:column;gap:6px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* Loading and fatal states */
+.loading{display:flex;flex-direction:column;gap:12px}
+.loading-text{margin:0;color:var(--muted);font-weight:700}
+.skeleton{display:grid;grid-template-columns:96px repeat(5,1fr);gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.skeleton span{height:64px;border-radius:6px;background:var(--surface-2);animation:pulse 1.2s ease-in-out infinite alternate}
+.skeleton span:nth-child(-n+6){height:22px}
+@keyframes pulse{from{opacity:1}to{opacity:.5}}
+.fatal{margin:0;font-size:15px;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:12px 14px;max-width:72ch}
+
+/* Controls */
+.controls{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;min-width:92px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.seg{border:1px solid var(--line);background:var(--surface);border-radius:8px;min-width:40px;height:38px;padding:0 12px;font-weight:700;font-variant-numeric:tabular-nums}
+.seg[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;height:36px;padding:0 14px 0 12px}
+.chip .dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--muted));flex:none}
+.chip .n{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:4px;padding:1px 6px;background:var(--surface-2);color:var(--muted)}
+.qmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1.5px dashed var(--warn);color:var(--warn);font-size:11px;font-weight:700;flex:none}
+
+/* Week grid */
+.grid-scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+/* The prototype has no doctype, so browsers render it in quirks mode, where
+   tables do not inherit font-size and line-height. Set them explicitly to keep
+   the approved grid density in standards mode. */
+table.week{width:100%;border-collapse:collapse;table-layout:fixed;min-width:760px;font-size:16px;line-height:normal}
+.week th,.week td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top;padding:8px}
+.week tr>*:last-child{border-right:0}
+.week tbody tr:last-child>*{border-bottom:0}
+.week thead th{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;font-size:15px;text-align:left;background:var(--surface-2)}
+.week thead th:first-child,.week tbody th{width:96px}
+.week tbody th{text-align:left;font-weight:700;background:var(--surface-2)}
+.ptime{display:block;font-weight:400;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Cards */
+.cell{display:flex;flex-direction:column;gap:6px;min-height:52px}
+.card{--tint:color-mix(in srgb,var(--c) 15%,var(--surface));background:var(--tint);border-left:4px solid var(--c);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;transition:opacity .15s}
+.card.unc{border-top:1.5px dashed var(--warn);border-right:1.5px dashed var(--warn);border-bottom:1.5px dashed var(--warn)}
+.card.dim{opacity:.28}
+.c-name{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.c-name>span:first-child{min-width:0;overflow-wrap:anywhere;hyphens:auto}
+.c-meta{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.c-note-btn{background:none;border:0;padding:0;text-align:left;font-size:12px;color:var(--warn);text-decoration:underline;text-underline-offset:2px}
+.c-note{margin:2px 0 0;font-size:12.5px;color:var(--ink)}
+
+/* Day list (narrow screens) */
+.daylist{display:none;flex-direction:column;gap:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.day h2{font-size:16px;font-weight:700}
+.slot{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:start}
+.slot .when{font-weight:700;font-size:13px}
+.empty{color:var(--muted);font-size:13px}
+
+/* Summary and footer */
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.summary pre{margin:0;white-space:pre-wrap;font-family:inherit;font-size:14.5px;line-height:1.55;max-width:80ch}
+.btn{align-self:flex-start;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;height:36px;padding:0 14px;font-weight:700}
+.btn.ok{background:transparent;color:var(--accent)}
+footer{font-size:12.5px;color:var(--muted);max-width:80ch}
+
+@media (max-width:640px){
+  .grid-scroll{display:none}
+  .daylist{display:flex}
+  .label{min-width:100%}
+  .skeleton{grid-template-columns:1fr}
+  .skeleton span:nth-child(n){height:64px}
+  .skeleton span:nth-child(n+6){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .card{transition:none}
+  .skeleton span{animation:none}
+}

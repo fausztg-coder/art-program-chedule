@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Hunyadi művészeti órarend</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="src/main.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1>Délutáni művészeti foglalkozások</h1>
+  </header>
+
+  <main class="stack">
+    <div class="loading" id="loading">
+      <p class="loading-text" role="status">Betöltés…</p>
+      <div class="skeleton" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <p class="fatal" id="fatal" role="alert" hidden>Az órarend most nem tölthető be. Próbáld újra később.</p>
+
+    <div class="stack" id="content" hidden>
+      <section class="controls" aria-label="Szűrés">
+        <div class="row" role="group" aria-labelledby="lbl-grade"><span class="label" id="lbl-grade">Évfolyam</span><div class="row" id="grades"></div></div>
+        <div class="row" role="group" aria-labelledby="lbl-class"><span class="label" id="lbl-class">Osztály</span><div class="row" id="classes"></div></div>
+        <div class="row" role="group" aria-labelledby="lbl-activity"><span class="label" id="lbl-activity">Foglalkozás</span><div class="row" id="activities"></div></div>
+        <div class="legend">
+          <span><span class="badge">Választható</span> egy idősávban több foglalkozás van</span>
+          <span><span class="qmark" aria-hidden="true">?</span> bizonytalan adat, koppints a kártyán a részletekért</span>
+        </div>
+      </section>
+
+      <div class="grid-scroll"><table class="week" id="week" aria-label="Heti órarend"></table></div>
+      <div class="daylist" id="daylist"></div>
+
+      <section class="summary" aria-labelledby="sum-heading">
+        <h2 id="sum-heading">Összefoglaló</h2>
+        <pre id="sumText"></pre>
+        <button class="btn" id="copy" type="button">Szöveg másolása</button>
+        <span class="sr-only" id="copyStatus" role="status"></span>
+      </section>
+    </div>
+  </main>
+
+  <footer id="foot"></footer>
+</div>
+</body>
+</html>
