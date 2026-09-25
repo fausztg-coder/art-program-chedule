@@ -1,7 +1,8 @@
 // Rendering and event wiring for index.html.
 
 import config from "../config.js";
-import { slotsForClass } from "./model.js";
+import { loadData, pickMode } from "./load.js";
+import { slotsForClass, TAB_NAMES } from "./model.js";
 import { summaryText } from "./summary.js";
 import {
   ALL,
@@ -29,11 +30,18 @@ const COPY = {
   copy: "Szöveg másolása",
   copied: "Kimásolva",
   copyFallback: "Kijelölve, másold ki",
+  bannerSnapshot: (date) => `Az órarend most nem frissült. A ${date} állapotot látod.`,
+  issuesSummary: (n) => `Adathibák (${n})`,
+  issue: (tab, row, message) => `${tab} fül, ${row}. sor: ${message}`,
+  report: "Hibát jelezz: ",
+  footerLive: (time) => `Élő adat a Google Táblázatból, betöltve ${time}.`,
+  footerSample: "Mintaadat (fejlesztői mód).",
   footerSnapshot: (when) => `Pillanatkép, ${when}.`,
 };
 
 const COPIED_MS = 1800;
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 
 const $ = (id) => document.getElementById(id);
 const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -51,17 +59,6 @@ let copyTimer = 0;
 // ---------------------------------------------------------------------------
 // Data
 
-async function loadSnapshot() {
-  const res = await fetch(config.SNAPSHOT_URL, { cache: "no-cache" });
-  if (!res.ok) throw new Error(`snapshot: HTTP ${res.status}`);
-  const data = await res.json();
-  const valid =
-    data && data.version === 1 && Array.isArray(data.classes) && data.classes.length > 0 &&
-    Array.isArray(data.slots) && Array.isArray(data.activities) && Array.isArray(data.periods) && Array.isArray(data.days);
-  if (!valid) throw new Error("snapshot: unexpected format");
-  return data;
-}
-
 function setModel(data) {
   model = data;
   activityIndex = new Map(model.activities.map((a, i) => [a.id, i]));
@@ -77,18 +74,53 @@ const colorOf = (id) => {
   return COLOR_RE.test(color) ? color : "var(--muted)";
 };
 
-// YYYY. MM. DD. HH:MM in the viewer's time zone.
-function formatDateTime(iso) {
+// Date parts in the viewer's time zone: "YYYY. MM. DD." and "HH:MM".
+function formatDate(iso) {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}. ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.`;
+}
+function formatTime(iso) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function renderStatic() {
-  const { iskola, tanev } = model.settings || {};
-  $("eyebrow").textContent = [iskola, tanev].filter(Boolean).join(" · ");
-  const when = formatDateTime(model.generatedAt);
-  $("foot").textContent = when ? COPY.footerSnapshot(when) : "";
+// Header, banners, issues panel and footer: everything that does not depend
+// on the selection.
+function renderMeta({ origin, fallbackReason }) {
+  const settings = model.settings;
+  $("eyebrow").textContent = [settings.iskola, settings.tanev].filter(Boolean).join(" · ");
+
+  const snapshotBanner = $("bannerSnapshot");
+  const date = formatDate(model.generatedAt);
+  snapshotBanner.hidden = !(fallbackReason && date);
+  snapshotBanner.textContent = snapshotBanner.hidden ? "" : COPY.bannerSnapshot(date);
+  const notice = $("bannerNotice");
+  notice.textContent = settings.kozlemeny || "";
+  notice.hidden = !settings.kozlemeny;
+  $("banners").hidden = snapshotBanner.hidden && notice.hidden;
+
+  renderIssues();
+
+  let footer = COPY.footerSample;
+  if (origin === "live") footer = COPY.footerLive(formatTime(model.generatedAt));
+  else if (origin === "snapshot") footer = date ? COPY.footerSnapshot(`${date} ${formatTime(model.generatedAt)}`) : "";
+  $("foot").textContent = footer;
+}
+
+function renderIssues() {
+  const issues = model.issues;
+  $("issues").hidden = !issues.length;
+  if (!issues.length) return;
+  $("issuesSummary").textContent = COPY.issuesSummary(issues.length);
+  $("issuesList").innerHTML = issues
+    .map((i) => `<li>${esc(COPY.issue(TAB_NAMES[i.tab] || i.tab, i.row, i.message))}</li>`)
+    .join("");
+  const contact = (model.settings.hibabejelentes || "").trim();
+  const report = $("issuesReport");
+  report.hidden = !contact;
+  report.innerHTML = !contact
+    ? ""
+    : esc(COPY.report) + (EMAIL_RE.test(contact) ? `<a href="mailto:${esc(contact)}">${esc(contact)}</a>` : esc(contact));
 }
 
 function renderControls() {
@@ -284,16 +316,19 @@ document.addEventListener("click", (e) => {
 // Start
 
 async function start() {
+  let result;
   try {
-    setModel(await loadSnapshot());
+    result = await loadData(config, { mode: pickMode(config, location.search) });
   } catch (err) {
-    console.error(err);
+    console.error(`Timetable could not be loaded: ${err.message}`);
     $("loading").hidden = true;
     $("fatal").hidden = false;
     return;
   }
+  if (result.fallbackReason) console.warn(`Showing the snapshot: ${result.fallbackReason}`);
+  setModel(result.model);
   sel = resolveSelection(model, { query: readQuery(location.search), stored: loadStored() });
-  renderStatic();
+  renderMeta(result);
   render();
   $("loading").hidden = true;
   $("content").hidden = false;

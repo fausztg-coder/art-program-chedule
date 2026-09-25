@@ -8,7 +8,8 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<!-- Non-blocking: a slow or blocked Google Fonts request must not delay the timetable. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="style.css">
 <script type="module" src="src/main.js"></script>
 </head>
@@ -33,6 +34,11 @@
     <p class="fatal" id="fatal" role="alert" hidden>Az órarend most nem tölthető be. Próbáld újra később.</p>
 
     <div class="stack" id="content" hidden>
+      <div class="banners" id="banners" hidden>
+        <p class="banner warn" id="bannerSnapshot" hidden></p>
+        <p class="banner info" id="bannerNotice" hidden></p>
+      </div>
+
       <section class="controls" aria-label="Szűrés">
         <div class="row" role="group" aria-labelledby="lbl-grade"><span class="label" id="lbl-grade">Évfolyam</span><div class="row" id="grades"></div></div>
         <div class="row" role="group" aria-labelledby="lbl-class"><span class="label" id="lbl-class">Osztály</span><div class="row" id="classes"></div></div>
@@ -52,6 +58,12 @@
         <button class="btn" id="copy" type="button">Szöveg másolása</button>
         <span class="sr-only" id="copyStatus" role="status"></span>
       </section>
+
+      <details class="issues" id="issues" hidden>
+        <summary id="issuesSummary"></summary>
+        <ul id="issuesList"></ul>
+        <p class="report" id="issuesReport" hidden></p>
+      </details>
     </div>
   </main>
 
