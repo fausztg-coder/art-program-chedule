@@ -1,0 +1,30 @@
+Nap,Első óra,Utolsó óra,Foglalkozás,Tanár,Terem,Célcsoport,Bizonytalan,Megjegyzés,Megjelenik
+Hétfő,7,7,Bábjáték,Csilla,rajzstúdió,"1, 2, 3",nem,,igen
+Hétfő,7,7,Nyitott világ,,,1,nem,Tanár és terem nincs megadva.,igen
+Hétfő,7,8,Színjátszás,Réka,kistorna,"5, 6, 8",nem,,igen
+Hétfő,8,8,Musical,Dóri,balett,"1, 2, 3",nem,,igen
+Hétfő,9,9,Színjátszás,Réka,kistorna,"1, 2, 3, 4",nem,,igen
+Kedd,7,7,Balett,Juli,balett,"1, 2",nem,,igen
+Kedd,7,8,Kerámia,Amy,a/1./kerámia,"5, 6",igen,"Amy sora 3.–6. évfolyamot ír, a termi sor 5.–6.-ot. A 8. órában az évfolyamsor szerint az 5. évfolyamnak modern tánca van.",igen
+Kedd,7,8,Képzőművészet,Lotti,rajzstúdió,3.b,nem,,igen
+Kedd,7,8,Képzőművészet,Virág,kisép/rajz,3.a,nem,,igen
+Kedd,7,7,Nyitott világ,,,1,nem,Tanár és terem nincs megadva.,igen
+Kedd,7,7,ÉK,,,"5, 6",igen,"A táblában csak „ÉK/5.-6.” áll, tanár és terem nélkül. A jelentése ismeretlen (énekkar?).",igen
+Kedd,8,9,Modern tánc,Juli,nagytornaterem,"4, 5",nem,,igen
+Kedd,8,9,Színpadi tánc,Ábel,balett,7,igen,A tanári sorban „7.m.” áll. Itt a teljes 7. évfolyamra vonatkoztattuk.,igen
+Kedd,9,10,Kerámia,Amy,a/1./kerámia,"5, 6",nem,,igen
+Kedd,9,9,Képzőművészet,Lotti,rajzstúdió,4,nem,,igen
+Kedd,10,10,Képzőművészet,Lotti,rajzstúdió,4,igen,Az évfolyamsorban „kép??” áll. Lotti sora 4. évfolyamot ír.,igen
+Szerda,7,8,Képzőművészet,Hajni,rajzstúdió,"5, 6",nem,,igen
+Szerda,7,8,Képzőművészet,Virág,kisép/rajz,1,nem,,igen
+Szerda,7,8,Robotika,,a/1./kerámia,,igen,"Csak a termi sorban szerepel, célcsoport nélkül. Célcsoport tisztázásáig nem jelenik meg.",nem
+Szerda,8,8,Néptánc,Andrea,kistorna,"1, 2, 3, 4",nem,,igen
+Szerda,8,9,Színpadi tánc,Ábel,nagytornaterem,8,igen,A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk.,igen
+Csütörtök,7,7,Bábjáték,Csilla,,"1, 2, 3",igen,Csilla sorában zárójelben áll: „(1.-2.-3.)”. Az évfolyamsorban nem szerepel.,igen
+Csütörtök,7,8,Kerámia,Amy,a/1./kerámia,"3, 4",igen,"Amy sora 3.–6. évfolyamot ír, a termi sor 3.–4.-et. A 8. órában az évfolyamsor szerint a 4. évfolyamnak színpadi tánca van.",igen
+Csütörtök,7,7,Képzőművészet,Virág,kisép/rajz,2.a,nem,,igen
+Csütörtök,8,9,Képzőművészet,Hajni,rajzstúdió,"7, 8",nem,,igen
+Csütörtök,8,8,Képzőművészet,Virág,kisép/rajz,2.a,igen,"Az évfolyam- és a termi sor szerint van, Virág sorából hiányzik. A tanár feltételezés.",igen
+Csütörtök,8,9,Színpadi tánc,Ábel,nagytornaterem,"4, 5, 6",nem,,igen
+Péntek,7,8,Modern tánc,Juli,nagytornaterem,8,igen,A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk.,igen
+Péntek,9,10,Modern tánc,Juli,balett,6,nem,,igen

@@ -1,0 +1,316 @@
+<title>Hunyadi művészeti órarend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<style>
+:root{
+  --bg:#f2f5f8; --surface:#ffffff; --surface-2:#e8edf3; --ink:#17202b; --muted:#566374;
+  --line:#d6dde6; --accent:#1e4d7e; --accent-ink:#ffffff; --warn:#8a5200; --warn-bg:#fff3dc;
+  --focus:#2b6cb0; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141b; --surface:#171f29; --surface-2:#202a36; --ink:#e6ebf1; --muted:#9aa7b7;
+    --line:#2b3644; --accent:#86b6ea; --accent-ink:#0c1520; --warn:#f2b866; --warn-bg:#2e2412;
+    --focus:#86b6ea; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#171f29; --surface-2:#202a36; --ink:#e6ebf1; --muted:#9aa7b7;
+  --line:#2b3644; --accent:#86b6ea; --accent-ink:#0c1520; --warn:#f2b866; --warn-bg:#2e2412;
+  --focus:#86b6ea; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:22px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;text-wrap:balance;margin:0}
+h1{font-size:clamp(24px,4vw,32px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+header{display:flex;flex-direction:column;gap:6px}
+.proto{font-size:13px;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:8px 12px;max-width:72ch}
+.controls{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;min-width:92px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.seg{border:1px solid var(--line);background:var(--surface);border-radius:8px;min-width:40px;height:38px;padding:0 12px;font-weight:700;font-variant-numeric:tabular-nums}
+.seg[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;height:36px;padding:0 14px 0 12px}
+.chip .dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--muted));flex:none}
+.chip .n{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:4px;padding:1px 6px;background:var(--surface-2);color:var(--muted)}
+.qmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1.5px dashed var(--warn);color:var(--warn);font-size:11px;font-weight:700;flex:none}
+.grid-scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table.week{width:100%;border-collapse:collapse;table-layout:fixed;min-width:760px}
+.week th,.week td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top;padding:8px}
+.week tr>*:last-child{border-right:0}
+.week tbody tr:last-child>*{border-bottom:0}
+.week thead th{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;font-size:15px;text-align:left;background:var(--surface-2)}
+.week thead th:first-child,.week tbody th{width:96px}
+.week tbody th{text-align:left;font-weight:700;background:var(--surface-2)}
+.ptime{display:block;font-weight:400;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cell{display:flex;flex-direction:column;gap:6px;min-height:52px}
+.card{--tint:color-mix(in srgb,var(--c) 15%,var(--surface));background:var(--tint);border-left:4px solid var(--c);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;transition:opacity .15s}
+.card.unc{border-top:1.5px dashed var(--warn);border-right:1.5px dashed var(--warn);border-bottom:1.5px dashed var(--warn)}
+.card.dim{opacity:.28}
+.c-name{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.c-meta{font-size:12.5px;color:var(--muted)}
+.c-note-btn{background:none;border:0;padding:0;text-align:left;font-size:12px;color:var(--warn);text-decoration:underline;text-underline-offset:2px}
+.c-note{margin:2px 0 0;font-size:12.5px;color:var(--ink)}
+.daylist{display:none;flex-direction:column;gap:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.day h3{font-size:16px}
+.slot{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:start}
+.slot .when{font-weight:700;font-size:13px}
+.empty{color:var(--muted);font-size:13px}
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.summary pre{margin:0;white-space:pre-wrap;font-family:inherit;font-size:14.5px;line-height:1.55;max-width:80ch}
+.btn{align-self:flex-start;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;height:36px;padding:0 14px;font-weight:700}
+.btn.ok{background:transparent;color:var(--accent)}
+footer{font-size:12.5px;color:var(--muted);max-width:80ch}
+@media (max-width:640px){
+  .grid-scroll{display:none}
+  .daylist{display:flex}
+  .label{min-width:100%}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Hunyadi Mátyás Általános Iskola · XIII. ker. · 2026/2027</div>
+    <h1>Délutáni művészeti foglalkozások</h1>
+    <p class="proto">Prototípus. Az adatokat egy táblázatképről írtam át. A szaggatott keretes kártyák bizonytalanok, és az iskolával még egyeztetni kell őket.</p>
+  </header>
+
+  <section class="controls" aria-label="Szűrés">
+    <div class="row" role="group" aria-labelledby="lg"><span class="label" id="lg">Évfolyam</span><div class="row" id="grades"></div></div>
+    <div class="row" role="group" aria-labelledby="ll"><span class="label" id="ll">Osztály</span><div class="row" id="letters"></div></div>
+    <div class="row" role="group" aria-labelledby="la"><span class="label" id="la">Foglalkozás</span><div class="row" id="acts"></div></div>
+    <div class="legend">
+      <span><span class="badge">Választható</span> egy idősávban több foglalkozás van</span>
+      <span><span class="qmark">?</span> bizonytalan adat, koppints a kártyán a részletekért</span>
+    </div>
+  </section>
+
+  <div class="grid-scroll"><table class="week" id="week" aria-label="Heti órarend"></table></div>
+  <div class="daylist" id="daylist"></div>
+
+  <section class="summary" aria-labelledby="sh">
+    <h2 id="sh">Összefoglaló</h2>
+    <pre id="sumText"></pre>
+    <button class="btn" id="copy" type="button">Szöveg másolása</button>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const DATA = {
+  meta:{ tanev:"2026/2027", atirva:"2026-09-25" },
+  periods:[
+    {n:7, from:"14:00", to:"14:45"},
+    {n:8, from:"14:45", to:"15:30"},
+    {n:9, from:"15:30", to:"16:00", q:"A táblában 30 perces, valószínűleg elírás."},
+    {n:10,from:"16:00", to:"16:45"}
+  ],
+  days:[{k:"H",n:"Hétfő"},{k:"K",n:"Kedd"},{k:"Sz",n:"Szerda"},{k:"Cs",n:"Csütörtök"},{k:"P",n:"Péntek"}],
+  classes:(()=>{const a=[];for(let g=1;g<=8;g++)for(const l of ["a","b"])a.push(g+"."+l);return a;})(),
+  acts:{
+    bab:{name:"Bábjáték",c:"#c0392b"},
+    musical:{name:"Musical",c:"#b07a12"},
+    szinj:{name:"Színjátszás",c:"#c9a100"},
+    balett:{name:"Balett",c:"#a02f97"},
+    modern:{name:"Modern tánc",c:"#e0507f"},
+    kepzo:{name:"Képzőművészet",c:"#5b4bb5"},
+    nept:{name:"Néptánc",c:"#d7782a"},
+    keramia:{name:"Kerámia",c:"#2e9459"},
+    szinpt:{name:"Színpadi tánc (?)",c:"#2a73c4"},
+    nyv:{name:"Nyitott világ",c:"#7c8794"},
+    ek:{name:"ÉK (?)",c:"#0f8f8f"}
+  },
+  // [nap, óra, foglalkozás, tanár, terem, célcsoport, bizonytalan, megjegyzés]
+  sessions:[
+    ["H",7,"bab","Csilla","rajzstúdió","1,2,3",0,""],
+    ["H",7,"szinj","Réka","kistorna","5,6,8",0,""],
+    ["H",7,"nyv","","","1",0,"Tanár és terem nincs megadva."],
+    ["H",8,"musical","Dóri","balett","1,2,3",0,""],
+    ["H",8,"szinj","Réka","kistorna","5,6,8",0,""],
+    ["H",9,"szinj","Réka","kistorna","1,2,3,4",0,""],
+
+    ["K",7,"balett","Juli","balett","1,2",0,""],
+    ["K",7,"kepzo","Virág","kisép/rajz","3.a",0,""],
+    ["K",7,"kepzo","Lotti","rajzstúdió","3.b",0,""],
+    ["K",7,"keramia","Amy","a/1./kerámia","5,6",1,"Amy sora 3.–6. évfolyamot ír, a termi sor és az évfolyamsor 5.–6.-ot."],
+    ["K",7,"nyv","","","1",0,"Tanár és terem nincs megadva."],
+    ["K",7,"ek","","","5,6",1,"A táblában csak „ÉK/5.-6.” áll, tanár és terem nélkül. A jelentése ismeretlen (énekkar?)."],
+    ["K",8,"modern","Juli","nagytornaterem","4,5",0,""],
+    ["K",8,"kepzo","Virág","kisép/rajz","3.a",0,""],
+    ["K",8,"kepzo","Lotti","rajzstúdió","3.b",0,""],
+    ["K",8,"keramia","Amy","a/1./kerámia","5,6",1,"Amy sora 3.–6. évfolyamot ír, a termi sor 5.–6.-ot. Az évfolyamsor szerint az 5. évfolyamnak ekkor modern tánca van."],
+    ["K",8,"szinpt","Ábel","balett","7",1,"A tanári sorban „7.m.” áll. Itt a teljes 7. évfolyamra vonatkoztattuk."],
+    ["K",9,"modern","Juli","nagytornaterem","4,5",0,""],
+    ["K",9,"szinpt","Ábel","balett","7",1,"A tanári sorban „7.m.” áll. Itt a teljes 7. évfolyamra vonatkoztattuk."],
+    ["K",9,"kepzo","Lotti","rajzstúdió","4",0,""],
+    ["K",9,"keramia","Amy","a/1./kerámia","5,6",0,""],
+    ["K",10,"kepzo","Lotti","rajzstúdió","4",1,"Az évfolyamsorban „kép??” áll. Lotti sora 4. évfolyamot ír."],
+    ["K",10,"keramia","Amy","a/1./kerámia","5,6",0,""],
+
+    ["Sz",7,"kepzo","Virág","kisép/rajz","1",0,""],
+    ["Sz",7,"kepzo","Hajni","rajzstúdió","5,6",0,""],
+    ["Sz",8,"kepzo","Virág","kisép/rajz","1",0,""],
+    ["Sz",8,"nept","Andrea","kistorna","1,2,3,4",0,""],
+    ["Sz",8,"kepzo","Hajni","rajzstúdió","5,6",0,""],
+    ["Sz",8,"szinpt","Ábel","nagytornaterem","8",1,"A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk."],
+    ["Sz",9,"szinpt","Ábel","nagytornaterem","8",1,"A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk."],
+
+    ["Cs",7,"kepzo","Virág","kisép/rajz","2.a",0,""],
+    ["Cs",7,"keramia","Amy","a/1./kerámia","3,4",1,"Amy sora 3.–6. évfolyamot ír, a termi sor 3.–4.-et."],
+    ["Cs",7,"bab","Csilla","","1,2,3",1,"Csilla sorában zárójelben áll: „(1.-2.-3.)”. Az évfolyamsorban nem szerepel."],
+    ["Cs",8,"kepzo","Virág","kisép/rajz","2.a",1,"Az évfolyam- és a termi sor szerint van, Virág sorából hiányzik. A tanár feltételezés."],
+    ["Cs",8,"keramia","Amy","a/1./kerámia","3,4",1,"Amy sora 3.–6. évfolyamot ír, a termi sor 3.–4.-et. Az évfolyamsor szerint a 4. évfolyamnak ekkor színpadi tánca van."],
+    ["Cs",8,"szinpt","Ábel","nagytornaterem","4,5,6",0,""],
+    ["Cs",8,"kepzo","Hajni","rajzstúdió","7,8",0,""],
+    ["Cs",9,"szinpt","Ábel","nagytornaterem","4,5,6",0,""],
+    ["Cs",9,"kepzo","Hajni","rajzstúdió","7,8",0,""],
+
+    ["P",7,"modern","Juli","nagytornaterem","8",1,"A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk."],
+    ["P",8,"modern","Juli","nagytornaterem","8",1,"A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk."],
+    ["P",9,"modern","Juli","balett","6",0,""],
+    ["P",10,"modern","Juli","balett","6",0,""]
+  ]
+};
+
+const S = DATA.sessions.map((r,i)=>({id:i,day:r[0],period:r[1],act:r[2],teacher:r[3],room:r[4],targets:r[5].split(","),unc:!!r[6],note:r[7]}));
+const PER = Object.fromEntries(DATA.periods.map(p=>[p.n,p]));
+const DAYLOW = {H:"hétfő",K:"kedd",Sz:"szerda",Cs:"csütörtök",P:"péntek"};
+const $ = id=>document.getElementById(id);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let state = { cls:"4.a", act:"all" };
+try{ const saved = JSON.parse(localStorage.getItem("hunyadi-orarend")||"null"); if(saved&&DATA.classes.includes(saved.cls)) state = saved; }catch(e){}
+(function fromHash(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  if(!h) return;
+  const [c,a] = h.split("~");
+  if(DATA.classes.includes(c)) state.cls = c;
+  if(a && (a==="all" || DATA.acts[a])) state.act = a;
+})();
+
+const matches = (s,cls)=>{ const g = cls.split(".")[0]; return s.targets.includes(g) || s.targets.includes(cls); };
+const forClass = cls=>S.filter(s=>matches(s,cls));
+
+function save(){
+  try{ localStorage.setItem("hunyadi-orarend", JSON.stringify(state)); }catch(e){}
+  try{ history.replaceState(null,"","#"+state.cls+"~"+state.act); }catch(e){}
+}
+
+function renderSelectors(){
+  const [g,l] = state.cls.split(".");
+  $("grades").innerHTML = [1,2,3,4,5,6,7,8].map(n=>`<button type="button" class="seg" id="g${n}" aria-pressed="${String(n)===g}" data-g="${n}">${n}.</button>`).join("");
+  const letters = DATA.classes.filter(c=>c.startsWith(g+".")).map(c=>c.split(".")[1]);
+  $("letters").innerHTML = letters.map(x=>`<button type="button" class="seg" id="l${x}" aria-pressed="${x===l}" data-l="${x}">${g}.${x}</button>`).join("");
+  const mine = forClass(state.cls);
+  const counts = {};
+  mine.forEach(s=>counts[s.act]=(counts[s.act]||0)+1);
+  if(state.act!=="all" && !counts[state.act]) state.act = "all";
+  const order = Object.keys(DATA.acts).filter(k=>counts[k]);
+  $("acts").innerHTML =
+    `<button type="button" class="chip" id="a-all" aria-pressed="${state.act==="all"}" data-a="all"><span class="dot" style="--c:var(--ink)"></span>Mind <span class="n">${mine.length} óra</span></button>` +
+    order.map(k=>`<button type="button" class="chip" id="a-${k}" aria-pressed="${state.act===k}" data-a="${k}"><span class="dot" style="--c:${DATA.acts[k].c}"></span>${esc(DATA.acts[k].name)} <span class="n">${counts[k]} óra</span></button>`).join("");
+}
+
+function card(s){
+  const a = DATA.acts[s.act];
+  const dim = state.act!=="all" && state.act!==s.act;
+  const meta = [s.teacher, s.room].filter(Boolean).join(" · ");
+  const note = s.note ? `<button type="button" class="c-note-btn" aria-expanded="false" data-note="${s.id}">${s.unc?"Miért bizonytalan?":"Megjegyzés"}</button><p class="c-note" id="note-${s.id}" hidden>${esc(s.note)}</p>` : "";
+  return `<div class="card${s.unc?" unc":""}${dim?" dim":""}" style="--c:${a.c}">
+    <div class="c-name"><span>${esc(a.name)}</span>${s.unc?'<span class="qmark" title="Bizonytalan adat">?</span>':""}</div>
+    ${meta?`<div class="c-meta">${esc(meta)}</div>`:""}${note}</div>`;
+}
+function cellHTML(list){
+  if(!list.length) return "";
+  const choice = list.length>1 ? '<span class="badge">Választható</span>' : "";
+  return `<div class="cell">${choice}${list.map(card).join("")}</div>`;
+}
+const ptime = p=>`${p.from}–${p.to}${p.q?` <span class="qmark" title="${esc(p.q)}">?</span>`:""}`;
+
+function renderGrid(){
+  const mine = forClass(state.cls);
+  const at = (d,p)=>mine.filter(s=>s.day===d&&s.period===p);
+  let h = `<thead><tr><th scope="col"><span class="ptime">óra</span></th>${DATA.days.map(d=>`<th scope="col">${d.n}</th>`).join("")}</tr></thead><tbody>`;
+  for(const p of DATA.periods){
+    h += `<tr><th scope="row">${p.n}. óra<span class="ptime">${ptime(p)}</span></th>`;
+    for(const d of DATA.days) h += `<td>${cellHTML(at(d.k,p.n))}</td>`;
+    h += `</tr>`;
+  }
+  $("week").innerHTML = h + "</tbody>";
+
+  $("daylist").innerHTML = DATA.days.map(d=>{
+    const slots = DATA.periods.map(p=>({p,list:at(d.k,p.n)})).filter(x=>x.list.length);
+    const body = slots.length ? slots.map(x=>`<div class="slot"><div class="when">${x.p.n}. óra<span class="ptime">${ptime(x.p)}</span></div>${cellHTML(x.list)}</div>`).join("") : `<div class="empty">Nincs foglalkozás.</div>`;
+    return `<div class="day"><h3>${d.n}</h3>${body}</div>`;
+  }).join("");
+}
+
+function spans(periods){
+  const ps = [...new Set(periods)].sort((a,b)=>a-b);
+  const out = []; let st = ps[0], pr = ps[0];
+  for(let i=1;i<=ps.length;i++){
+    if(ps[i]===pr+1){ pr = ps[i]; continue; }
+    out.push({a:st,b:pr}); st = pr = ps[i];
+  }
+  return out.map(r=>`${r.a===r.b?r.a+".":r.a+"–"+r.b+"."} óra (${PER[r.a].from}–${PER[r.b].to})`);
+}
+function summaryText(){
+  const mine = forClass(state.cls);
+  const acts = state.act==="all" ? Object.keys(DATA.acts).filter(k=>mine.some(s=>s.act===k)) : [state.act];
+  const lines = [`${state.cls} – délutáni művészeti foglalkozások, ${DATA.meta.tanev}`];
+  for(const k of acts){
+    const list = mine.filter(s=>s.act===k);
+    const groups = {};
+    list.forEach(s=>{ const key = s.day+"|"+s.teacher+"|"+s.room; (groups[key]=groups[key]||[]).push(s); });
+    const parts = DATA.days.flatMap(d=>Object.entries(groups).filter(([key])=>key.split("|")[0]===d.k).map(([key,ss])=>{
+      const [,t,r] = key.split("|");
+      const extra = [t,r].filter(Boolean).join(", ");
+      return `${DAYLOW[d.k]} ${spans(ss.map(s=>s.period)).join(", ")}${extra?", "+extra:""}${ss.some(s=>s.unc)?" (?)":""}`;
+    }));
+    lines.push(`• ${DATA.acts[k].name}: ${parts.join("; ")}`);
+  }
+  if(mine.some(s=>s.unc)) lines.push("(?) = bizonytalan adat, az iskolával ellenőrizendő.");
+  return lines.join("\n");
+}
+
+function render(){
+  renderSelectors(); renderGrid();
+  $("sumText").textContent = summaryText();
+  save();
+}
+
+document.addEventListener("click",e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.g){ const cur = state.cls.split(".")[1]; const cand = b.dataset.g+"."+cur; state.cls = DATA.classes.includes(cand)?cand:DATA.classes.find(c=>c.startsWith(b.dataset.g+".")); render(); }
+  else if(b.dataset.l){ state.cls = state.cls.split(".")[0]+"."+b.dataset.l; render(); }
+  else if(b.dataset.a){ state.act = b.dataset.a; render(); }
+  else if(b.dataset.note){
+    const open = b.getAttribute("aria-expanded")==="true";
+    document.querySelectorAll(`[data-note="${b.dataset.note}"]`).forEach(x=>x.setAttribute("aria-expanded",String(!open)));
+    document.querySelectorAll(`#note-${b.dataset.note}`).forEach(x=>x.hidden=open);
+  }
+  else if(b.id==="copy"){
+    const txt = $("sumText").textContent;
+    const done = ()=>{ b.textContent="Kimásolva"; b.classList.add("ok"); setTimeout(()=>{b.textContent="Szöveg másolása"; b.classList.remove("ok");},1800); };
+    const fallback = ()=>{ const r=document.createRange(); r.selectNodeContents($("sumText")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Kijelölve, másold ki"; };
+    try{ navigator.clipboard.writeText(txt).then(done,fallback); }catch(err){ fallback(); }
+  }
+});
+
+const nUnc = S.filter(s=>s.unc).length;
+$("foot").textContent = `Forrás: az iskola ${DATA.meta.tanev}-es délutáni művészeti táblázata (kép), átírva ${DATA.meta.atirva}. ${S.length} idősáv, ebből ${nUnc} bizonytalan. Az osztálylista (évfolyamonként a és b) feltételezés. A robotika nem szerepel, mert a táblázat nem adja meg, kiknek szól.`;
+render();
+</script>
