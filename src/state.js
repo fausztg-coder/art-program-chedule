@@ -1,15 +1,9 @@
-// Selection state. The resolve/transition functions are pure. The URL and
-// localStorage helpers touch browser globals only when called, so Node tests
-// can import this file.
-//
-// The first part is the 1.0 selection (one class, one activity), used by the
-// 1.0 screen until milestone 2 replaces it. The 1.1 selection (SPEC 1.1 §5)
-// follows below.
+// Selection state (SPEC 1.1 §5): class = null ("Összes") or one class;
+// disciplines = activity ids in chip order, empty = "Összes". Everything here
+// is pure except loadChoice/saveChoice, which touch browser globals only when
+// called, so Node tests can import this file.
 
-import { itemsForClass, lessonsOf, reachesClass, slotsForClass } from "./model.js";
-
-export const STORAGE_KEY = "hunyadi-orarend";
-export const ALL = "all";
+import { itemsForClass, lessonsOf, reachesClass } from "./model.js";
 
 const gradeOf = (cls) => cls.split(".")[0];
 
@@ -22,90 +16,11 @@ export function classesOfGrade(model, grade) {
   return model.classes.filter((c) => gradeOf(c) === String(grade));
 }
 
-// Activities with at least one slot for the class, in activity order.
-export function activityCounts(model, cls) {
-  const counts = new Map();
-  for (const s of slotsForClass(model, cls)) counts.set(s.activityId, (counts.get(s.activityId) || 0) + 1);
-  return model.activities.filter((a) => counts.has(a.id)).map((activity) => ({ activity, count: counts.get(activity.id) }));
+// The mobile class selector (SPEC §4.5.2): one row per grade, in the order of
+// the Osztályok tab.
+export function classRows(model) {
+  return gradesOf(model).map((grade) => ({ grade, classes: classesOfGrade(model, grade) }));
 }
-
-// Unknown class → first class; activity without slots for the class → all.
-export function normalizeSelection(model, { cls, act }) {
-  const validCls = model.classes.includes(cls) ? cls : model.classes[0];
-  const validAct = act !== ALL && activityCounts(model, validCls).some((c) => c.activity.id === act) ? act : ALL;
-  return { cls: validCls, act: validAct };
-}
-
-// Precedence per field: URL, then stored selection, then the first class / all.
-// A valid URL class without foglalkozas means all; the stored activity is only
-// used together with the stored class.
-export function resolveSelection(model, { query = {}, stored = null } = {}) {
-  if (model.classes.includes(query.osztaly)) {
-    return normalizeSelection(model, { cls: query.osztaly, act: query.foglalkozas || ALL });
-  }
-  const fromStore = Boolean(stored && model.classes.includes(stored.osztaly));
-  const cls = fromStore ? stored.osztaly : model.classes[0];
-  const act = query.foglalkozas || (fromStore && stored.foglalkozas) || ALL;
-  return normalizeSelection(model, { cls, act });
-}
-
-// A new grade keeps the letter if that class exists, else takes the grade's first class.
-export function selectGrade(model, sel, grade) {
-  const candidate = `${grade}.${sel.cls.split(".")[1]}`;
-  const cls = model.classes.includes(candidate) ? candidate : classesOfGrade(model, grade)[0];
-  return normalizeSelection(model, { cls, act: sel.act });
-}
-
-export function selectClass(model, sel, cls) {
-  return normalizeSelection(model, { cls, act: sel.act });
-}
-
-export function selectActivity(model, sel, act) {
-  return normalizeSelection(model, { cls: sel.cls, act });
-}
-
-// Tolerates hand-typed values: "4. A" → "4.a".
-export function readQuery(search) {
-  const params = new URLSearchParams(search);
-  const get = (key) => (params.get(key) || "").normalize("NFC").replace(/\s+/g, "").toLowerCase();
-  return { osztaly: get("osztaly"), foglalkozas: get("foglalkozas") };
-}
-
-// Query string for the selection, keeping unrelated parameters (e.g. forras).
-export function searchFor(search, sel) {
-  const params = new URLSearchParams(search);
-  params.set("osztaly", sel.cls);
-  if (sel.act === ALL) params.delete("foglalkozas");
-  else params.set("foglalkozas", sel.act);
-  return `?${params}`;
-}
-
-export function loadStored() {
-  try {
-    const value = JSON.parse(globalThis.localStorage.getItem(STORAGE_KEY));
-    return value && typeof value === "object" ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-export function persist(sel) {
-  try {
-    globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify({ osztaly: sel.cls, foglalkozas: sel.act }));
-  } catch {
-    // Storage may be unavailable (private mode, blocked site data).
-  }
-  try {
-    const { location, history } = globalThis;
-    history.replaceState(history.state, "", searchFor(location.search, sel) + location.hash);
-  } catch {
-    // Ignore: the page still works without URL sync.
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 1.1 selection (SPEC 1.1 §5): class = null ("Összes") or one class;
-// disciplines = activity ids in chip order, empty = "Összes".
 
 export const NO_SELECTION = Object.freeze({ cls: null, disciplines: [] });
 
@@ -132,15 +47,17 @@ export function clearDisciplines(sel) {
   return { cls: sel.cls, disciplines: [] };
 }
 
-// Readable Célcsoport (SPEC §4.5): "5,6" → "5. évf., 6. évf."; sorted by grade,
-// a whole grade before its single classes.
-export function targetLabel(targets) {
+// Readable Célcsoport (SPEC §4.5): "5,6" → ["5. évf.", "6. évf."]; sorted by
+// grade, a whole grade before its single classes. Kept as parts so the narrow
+// class column can wrap between them.
+export function targetParts(targets) {
   const grade = (t) => Number(t.split(".")[0]);
   return [...targets]
     .sort((a, b) => grade(a) - grade(b) || a.includes(".") - b.includes(".") || a.localeCompare(b, "hu"))
-    .map((t) => (t.includes(".") ? t : `${t}. évf.`))
-    .join(", ");
+    .map((t) => (t.includes(".") ? t : `${t}. évf.`));
 }
+
+export const targetLabel = (targets) => targetParts(targets).join(", ");
 
 // "7–8. óra", or "9. óra" for a single lesson.
 export function periodLabel(item) {
@@ -168,6 +85,14 @@ export function visibleItems(model, sel) {
         a.item.sheetRow - b.item.sheetRow,
     )
     .map(({ item }) => item);
+}
+
+// Visible items per day, in the order of the days; days without items are left
+// out (SPEC §4.5.5).
+export function groupByDay(model, items) {
+  return model.days
+    .map((day) => ({ day, items: items.filter((item) => item.day === day.key) }))
+    .filter((group) => group.items.length);
 }
 
 // Items sharing a (day, lesson) with another visible item (SPEC §4.6); only

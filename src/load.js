@@ -15,6 +15,14 @@ export function pickMode(config, search) {
 // Resolves to { model, origin, fallbackReason? }. Rejects only when the
 // snapshot cannot be loaded either.
 export async function loadData(config, { mode, fetch = globalThis.fetch, now = () => new Date() } = {}) {
+  // The snapshot is requested right away, alongside the CSVs, so that a failed
+  // live load switches to it without a second wait: "Betöltés…" stays at most
+  // about TIMEOUT_MS (SPEC 1.1 §4.7). Settled into a value so an unused
+  // failure is never an unhandled rejection.
+  const snapshot = fetchSnapshot(config, fetch).then(
+    (model) => ({ model }),
+    (error) => ({ error }),
+  );
   let fallbackReason;
   if (mode === "live" || mode === "sample") {
     try {
@@ -26,12 +34,8 @@ export async function loadData(config, { mode, fetch = globalThis.fetch, now = (
       fallbackReason = err.message;
     }
   }
-  let model;
-  try {
-    model = await fetchSnapshot(config, fetch);
-  } catch (err) {
-    throw new Error(fallbackReason === undefined ? err.message : `${fallbackReason}; ${err.message}`);
-  }
+  const { model, error } = await snapshot;
+  if (error) throw new Error(fallbackReason === undefined ? error.message : `${fallbackReason}; ${error.message}`);
   return fallbackReason === undefined ? { model, origin: "snapshot" } : { model, origin: "snapshot", fallbackReason };
 }
 

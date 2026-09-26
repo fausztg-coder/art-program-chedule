@@ -8,6 +8,7 @@ import {
   choiceQuery,
   clearDisciplines,
   countLabel,
+  groupByDay,
   normalizeChoice,
   periodLabel,
   readChoiceQuery,
@@ -15,6 +16,7 @@ import {
   schoolYearLabel,
   selectionTitle,
   targetLabel,
+  targetParts,
   timeRange,
   toggleDiscipline,
   visibleItems,
@@ -91,6 +93,24 @@ test("class column: grades as 'n. évf.', classes by name, sorted by grade", () 
   assert.equal(targetLabel(["5", "6"]), "5. évf., 6. évf.");
   assert.equal(targetLabel(["3.b"]), "3.b");
   assert.equal(targetLabel(["6.m", "4", "6", "3.a"]), "3.a, 4. évf., 6. évf., 6.m");
+});
+
+test("class column parts keep each element whole, for wrapping between them", () => {
+  assert.deepEqual(targetParts(["1", "2", "3", "4"]), ["1. évf.", "2. évf.", "3. évf.", "4. évf."]);
+  assert.deepEqual(targetParts(["7.m"]), ["7.m"]);
+  assert.equal(targetLabel(["4", "3"]), targetParts(["4", "3"]).join(", "));
+});
+
+test("grouping by day: Monday first, days without rows left out", () => {
+  const model = model18(
+    row({ Nap: "Péntek", Célcsoport: "1" }),
+    row({ Nap: "Hétfő", Célcsoport: "1" }),
+    row({ Nap: "Szerda", Célcsoport: "2" }),
+  );
+  const groups = groupByDay(model, visibleItems(model, NO_SELECTION));
+  assert.deepEqual(groups.map((g) => [g.day.name, rowsOf(g.items)]), [["Hétfő", [3]], ["Szerda", [4]], ["Péntek", [2]]]);
+  assert.deepEqual(groupByDay(model, visibleItems(model, sel("1.a"))).map((g) => g.day.key), ["H", "P"]);
+  assert.deepEqual(groupByDay(model, []), []);
 });
 
 test("time range and lesson label", () => {

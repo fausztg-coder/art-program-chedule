@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseCSV } from "../src/csv.js";
-import { contrast, INK, itemsForClass, lessonsOf, reachesClass, slotsOf, slugify, tintOf, FALLBACK_PALETTE } from "../src/model.js";
+import { contrast, INK, itemsForClass, lessonsOf, reachesClass, slugify, tintOf, FALLBACK_PALETTE } from "../src/model.js";
 import { sampleTables, build, buildOk, HEADER, row, withTab, withActivities } from "./helpers.mjs";
 
 const issue = (level, tab, row, message) => ({ level, tab, row, message });
@@ -14,7 +14,11 @@ const GOLDEN_FIELDS = ["day", "period", "activity", "teacher", "room", "targets"
 const projectSorted = (slots) =>
   slots.map((s) => JSON.stringify(Object.fromEntries(GOLDEN_FIELDS.map((f) => [f, s[f]])))).sort();
 
-// Regression against 1.0: the rows, split into lessons, still give the 43 slots.
+// Regression against 1.0: the rows, split into lessons, still give the 43 slots
+// of the 1.0 golden fixture.
+const slotsOf = (model) =>
+  model.items.flatMap((item) => lessonsOf(model, item).map((period) => ({ ...item, period })));
+
 test("golden: sample CSVs produce exactly the expected slots", () => {
   const model = buildOk(sampleTables());
   const expected = JSON.parse(readFileSync(new URL("./fixtures/expected-slots.json", import.meta.url), "utf8"));

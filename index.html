@@ -3,71 +3,75 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <title>Hunyadi művészeti órarend</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Non-blocking: a slow or blocked Google Fonts request must not delay the timetable. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
 <script type="module" src="src/main.js"></script>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="eyebrow" id="eyebrow"></div>
-    <h1>Délutáni művészeti foglalkozások</h1>
-  </header>
+<header class="site-header">
+  <div class="decor decor-disc" aria-hidden="true"></div>
+  <div class="decor decor-ring" aria-hidden="true"></div>
+  <div class="header-inner wrap">
+    <div class="school">
+      <span class="school-name">Hunyadi Mátyás Általános Iskola</span>
+      <span class="school-kicker">MŰVÉSZETI KÉPZÉS</span>
+    </div>
+    <h1>Művészeti órarend</h1>
+  </div>
+</header>
 
-  <main class="stack" aria-busy="true">
-    <div class="loading" id="loading">
-      <p class="loading-text" role="status">Betöltés…</p>
-      <div class="skeleton" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
+<main class="page wrap" aria-busy="true">
+  <p class="loading" id="loading" role="status">Betöltés…</p>
+  <p class="fatal" id="fatal" role="alert" hidden>Az órarend most nem tölthető be. Próbáld újra később.</p>
+
+  <div class="content" id="content" hidden>
+    <div class="banners" id="banners" hidden>
+      <p class="banner banner-fallback" id="bannerSnapshot" hidden></p>
+      <p class="banner banner-notice" id="bannerNotice" hidden></p>
     </div>
 
-    <p class="fatal" id="fatal" role="alert" hidden>Az órarend most nem tölthető be. Próbáld újra később.</p>
+    <section class="selector card" aria-label="Választó">
+      <fieldset class="choice">
+        <legend class="choice-label">Osztály</legend>
+        <div class="chips class-chips" id="classChips"></div>
+      </fieldset>
+      <div class="selector-divider" aria-hidden="true"></div>
+      <fieldset class="choice" aria-describedby="disciplineHelp">
+        <legend class="choice-label has-help">Tanszak</legend>
+        <span class="choice-help" id="disciplineHelp">több is választható</span>
+        <div class="chips" id="disciplineChips"></div>
+      </fieldset>
+    </section>
 
-    <div class="stack" id="content" hidden>
-      <div class="banners" id="banners" hidden>
-        <p class="banner warn" id="bannerSnapshot" hidden></p>
-        <p class="banner info" id="bannerNotice" hidden></p>
-      </div>
-
-      <section class="controls" aria-label="Szűrés">
-        <div class="row" role="group" aria-labelledby="lbl-grade"><span class="label" id="lbl-grade">Évfolyam</span><div class="row" id="grades"></div></div>
-        <div class="row" role="group" aria-labelledby="lbl-class"><span class="label" id="lbl-class">Osztály</span><div class="row" id="classes"></div></div>
-        <div class="row" role="group" aria-labelledby="lbl-activity"><span class="label" id="lbl-activity">Foglalkozás</span><div class="row" id="activities"></div></div>
-        <div class="legend">
-          <span><span class="badge">Választható</span> egy idősávban több foglalkozás van</span>
-          <span><span class="qmark" aria-hidden="true">?</span> bizonytalan adat, koppints a kártyán a részletekért</span>
+    <section class="results card" aria-labelledby="resultTitle">
+      <div class="results-head">
+        <div class="results-summary" aria-live="polite" aria-atomic="true">
+          <h2 id="resultTitle"></h2>
+          <span class="results-count" id="resultCount"></span>
         </div>
-      </section>
+        <div class="pdf">
+          <span class="pdf-note" id="pdfNote">PDF/nyomtatás csak egy osztály kiválasztásakor érhető el.</span>
+          <button class="pdf-button" id="pdfButton" type="button" data-action="print" aria-describedby="pdfNote" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>PDF/nyomtatás</button>
+        </div>
+      </div>
+      <div class="list-head" id="listHead" aria-hidden="true"><span>IDŐPONT</span><span>TANSZAK</span><span>TANÁR</span><span>TEREM</span><span>OSZTÁLY</span></div>
+      <div class="days" id="days"></div>
+      <p class="empty" id="empty" hidden>Erre a választásra nincs foglalkozás.</p>
+    </section>
 
-      <div class="grid-scroll" id="gridScroll" role="region" aria-label="Heti órarend"><table class="week" id="week" aria-label="Heti órarend"></table></div>
-      <div class="daylist" id="daylist"></div>
-
-      <section class="summary" aria-labelledby="sum-heading">
-        <h2 id="sum-heading">Összefoglaló</h2>
-        <pre id="sumText"></pre>
-        <button class="btn" id="copy" type="button">Szöveg másolása</button>
-        <span class="sr-only" id="copyStatus" role="status"></span>
-      </section>
-
-      <details class="issues" id="issues" hidden>
-        <summary id="issuesSummary"></summary>
-        <ul id="issuesList"></ul>
-        <p class="report" id="issuesReport" hidden></p>
-      </details>
-    </div>
-  </main>
-
-  <footer id="foot"></footer>
-</div>
+    <details class="issues card" id="issues" hidden>
+      <summary id="issuesSummary"></summary>
+      <ul id="issuesList"></ul>
+      <p class="report" id="issuesReport" hidden></p>
+    </details>
+  </div>
+</main>
 </body>
 </html>

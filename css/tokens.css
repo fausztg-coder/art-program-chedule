@@ -1,0 +1,97 @@
+/* Design tokens (SPEC 1.1 §4.2 colours, §4.3 type, §4.1/§4.4 sizes).
+   Sizes that differ between the desktop (and tablet) and the mobile layout are
+   variables too, overridden once below 768 px. */
+:root {
+  /* Colours, with the SPEC's token names */
+  --brand-burgundy: #761117;
+  --brand-gold: #e6a328;
+  --on-brand: #fbf1de;
+  --on-brand-accent: #f2c66b;
+  --ink: #3a1f06;
+  --ink-label: #653706;
+  --ink-muted: #7a5a3a;
+  --ink-secondary: #5a3a1a;
+  --accent-text: #8a5a0c;
+  --ink-muted-print: #6b4e30;
+  --bg-page: #fbf7ef;
+  --surface: #ffffff;
+  --border: #e8d9c0;
+  --border-control: #e1cdae;
+  --divider: #efe4d2;
+  --divider-row: #f3eadb;
+  --disabled-fill: #efe4d2;
+  --decor-ring: rgba(251, 241, 222, 0.35);
+  /* Not in the §4.2 table: the fallback banner fill (§4.7) and the hover
+     colour proposed in §13. */
+  --banner-fill: #fff3d6;
+  --brand-burgundy-hover: #4e0b10;
+
+  /* Type (§4.3) */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-ui: "Source Sans 3", system-ui, sans-serif;
+  --h1-size: 60px;
+  --h1-line: 1;
+  --school-size: 20px;
+  --school-line: 1;
+  --kicker-size: 11px;
+  --kicker-spacing: 0.24em;
+  --h2-size: 24px;
+  --day-size: 18px;
+  --label-size: 15px;
+  --meta-size: 15px;
+  --count-size: 15px;
+
+  /* Layout and spacing (§4.1, §4.4) */
+  --content-width: min(1100px, calc(100% - 48px));
+  --header-pad-top: 32px;
+  --header-pad-bottom: 44px;
+  --header-gap: 28px;
+  --school-gap: 3px;
+  --main-pad-top: 32px;
+  --main-pad-bottom: 40px;
+  --stack-gap: 20px;
+  --card-radius: 18px;
+  --selector-pad: 24px 28px;
+  --selector-gap: 18px;
+  --chip-gap: 8px;
+  --chip-pad: 16px;
+  --chip-pad-discipline: 16px;
+  --chip-min: 56px;
+  --pdf-height: 44px;
+  --list-columns: 150px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) 80px;
+
+  color-scheme: light;
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --h1-size: 38px;
+    --h1-line: 1.02;
+    --school-size: 15px;
+    --school-line: 1.1;
+    --kicker-size: 10px;
+    --kicker-spacing: 0.22em;
+    --h2-size: 21px;
+    --day-size: 17px;
+    --label-size: 14px;
+    --meta-size: 14px;
+    --count-size: 14px;
+
+    --content-width: calc(100% - 32px);
+    --header-pad-top: 20px;
+    --header-pad-bottom: 26px;
+    --header-gap: 18px;
+    --school-gap: 2px;
+    --main-pad-top: 16px;
+    --main-pad-bottom: 16px;
+    --stack-gap: 16px;
+    --card-radius: 16px;
+    --selector-pad: 16px;
+    --selector-gap: 14px;
+    --chip-gap: 6px;
+    --chip-pad: 12px;
+    --chip-pad-discipline: 14px;
+    --chip-min: 54px;
+    --pdf-height: 48px;
+  }
+}

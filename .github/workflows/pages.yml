@@ -73,7 +73,7 @@ jobs:
         # reference files, workflow or Markdown files.
         run: |
           mkdir -p _site/data
-          cp -r index.html style.css config.js src _site/
+          cp -r index.html config.js css src _site/
           cp data/snapshot.json _site/data/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
