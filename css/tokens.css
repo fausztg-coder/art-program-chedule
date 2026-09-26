@@ -25,6 +25,8 @@
      colour proposed in §13. */
   --banner-fill: #fff3d6;
   --brand-burgundy-hover: #4e0b10;
+  /* The dashed outline of an empty slot on the print page (§6.4). */
+  --print-empty-slot: #dccbae;
 
   /* Type (§4.3) */
   --font-display: "Fraunces", Georgia, serif;

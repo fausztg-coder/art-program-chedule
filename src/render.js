@@ -1,6 +1,7 @@
 // Screen DOM (SPEC 1.1 §4). Text from the Sheet only ever goes in through
 // textContent and setAttribute (CLAUDE.md): there is no innerHTML here.
 
+import { el, setColor } from "./dom.js";
 import { TAB_NAMES } from "./model.js";
 import {
   choiceItems,
@@ -29,7 +30,6 @@ export const COPY = {
   classes: "Osztály: ",
 };
 
-const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const EMAIL_RE = /^[^\s@<>":?&/]+@[^\s@<>":?&/]+\.[^\s@<>":?&/]+$/;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -42,20 +42,6 @@ const ICONS = {
     shapes: [["path", { d: "M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" }], ["circle", { cx: "12", cy: "9", r: "2.5" }]],
   },
 };
-
-// A new element. props: class, text, hidden, or any attribute; children may be
-// nodes, strings (added as text) or null.
-function el(tag, props = {}, ...children) {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(props)) {
-    if (value === undefined || value === null || value === false) continue;
-    if (key === "class") node.className = value;
-    else if (key === "text") node.textContent = value;
-    else node.setAttribute(key, value === true ? "" : String(value));
-  }
-  node.append(...children.flat().filter((child) => child !== null && child !== undefined && child !== false));
-  return node;
-}
 
 function icon(name, className) {
   const { width, shapes } = ICONS[name];
@@ -72,12 +58,6 @@ function icon(name, className) {
     svg.append(shape);
   }
   return svg;
-}
-
-// Colours go into custom properties, where any value would be accepted
-// (url(...) included), so they are checked once more here.
-function setColor(node, property, color) {
-  if (COLOR_RE.test(color)) node.style.setProperty(property, color);
 }
 
 // ---------------------------------------------------------------------------

@@ -2,8 +2,9 @@
 
 import config from "../config.js";
 import { loadData, pickMode } from "./load.js";
+import { renderPrintPage } from "./print-view.js";
 import { renderClassChips, renderDataStates, renderDisciplineChips, renderResults } from "./render.js";
-import { chooseClass, clearDisciplines, loadChoice, resolveChoice, saveChoice, toggleDiscipline } from "./state.js";
+import { chooseClass, clearDisciplines, loadChoice, printTitle, resolveChoice, saveChoice, toggleDiscipline } from "./state.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -37,6 +38,7 @@ function render() {
   renderClassChips($("classChips"), model, sel);
   renderDisciplineChips($("disciplineChips"), model, sel);
   renderResults(resultElements(), model, sel, openNotes);
+  renderPrintPage($("printPage"), model, sel);
   saveChoice(sel);
   if (focus) document.querySelector(focus)?.focus();
 }
@@ -70,8 +72,34 @@ document.addEventListener("click", (event) => {
     if (focusOpened.delete(value)) return;
     setNote(value, !openNotes.has(value));
   }
-  // action === "print": milestone 3 (print view and window.print()).
+  else if (action === "print") {
+    beforePrint();
+    window.print();
+  }
 });
+
+// Printing (SPEC §6.2): the print page is rebuilt from the current selection,
+// and the document title (the PDF's title and file name) becomes the result
+// title until printing ends. Ctrl+P and the browser menu go through
+// beforeprint too; matchMedia covers browsers that do not fire it.
+let screenTitle = null;
+
+function beforePrint() {
+  if (!model) return;
+  renderPrintPage($("printPage"), model, sel);
+  if (screenTitle === null) screenTitle = document.title;
+  document.title = sel.cls ? printTitle(model, sel) : screenTitle;
+}
+
+function afterPrint() {
+  if (screenTitle === null) return;
+  document.title = screenTitle;
+  screenTitle = null;
+}
+
+window.addEventListener("beforeprint", beforePrint);
+window.addEventListener("afterprint", afterPrint);
+window.matchMedia?.("print").addEventListener?.("change", (event) => (event.matches ? beforePrint() : afterPrint()));
 
 // Keyboard focus shows the note too (§4.6); a tap does not count as keyboard
 // focus (:focus-visible), so the tap's click alone toggles it.

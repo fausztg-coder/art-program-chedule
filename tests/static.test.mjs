@@ -81,8 +81,9 @@ test("css/tokens.css defines the SPEC §4.2 colour tokens with their values", ()
 test("every custom property the stylesheets use is defined", () => {
   const css = STYLESHEETS.map(read).join("\n");
   const defined = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
-  // Set per element from the Sheet colours in src/render.js.
-  for (const name of ["--dot", "--tint"]) defined.add(name);
+  // Set per element from JS: Sheet colours (src/render.js, src/print-view.js)
+  // and the print grid's row count and lanes (src/print-view.js).
+  for (const name of ["--dot", "--tint", "--rows", "--lane", "--lanes"]) defined.add(name);
   for (const [, name] of css.matchAll(/var\((--[a-z0-9-]+)/g)) {
     assert.ok(defined.has(name), `${name} is used but never defined`);
   }

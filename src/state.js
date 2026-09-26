@@ -125,6 +125,61 @@ export function selectionTitle(model, sel) {
 
 export const countLabel = (n) => `${n} foglalkozás hetente`;
 
+// ---------------------------------------------------------------------------
+// Print page (SPEC §6)
+
+// document.title while printing: the PDF's title and suggested file name (§6.2).
+export const printTitle = (model, sel) => `Művészeti órarend – ${selectionTitle(model, sel)}`;
+
+// The A4 grid (§6.4): one row per period of the Órák tab, one column per day.
+// Only for one class (§6.1); the rows are the screen list's rows. A card spans
+// its lessons (row = index into model.periods). Cards whose time overlaps
+// stand side by side (owner decision, 2026-09-26): each group of overlapping
+// cards gets equal lanes, `lanes` wide, and every card keeps one lane for its
+// whole span. On the same first lesson the longer card takes the left lane.
+// empty: rows of a day that no card covers (dashed outline).
+export function printLayout(model, sel) {
+  const items = sel.cls ? visibleItems(model, sel) : [];
+  const marked = choiceItems(model, sel, items);
+  const rowOf = new Map(model.periods.map((p, i) => [p.n, i]));
+  const days = model.days.map((day) => {
+    const placed = items
+      .filter((item) => item.day === day.key)
+      .map((item) => {
+        const lessons = lessonsOf(model, item);
+        return { item, row: rowOf.get(lessons[0]), span: lessons.length };
+      })
+      .filter((card) => card.span > 0)
+      .sort((a, b) => a.row - b.row || b.span - a.span); // stable: list order otherwise
+
+    const cards = [];
+    let group = [];
+    let groupEnd = -1;
+    let laneEnds = []; // last row taken in each lane of the current group
+    const closeGroup = () => {
+      group.forEach((card) => (card.lanes = laneEnds.length));
+      group = [];
+      laneEnds = [];
+    };
+    for (const { item, row, span } of placed) {
+      if (row > groupEnd) closeGroup();
+      let lane = laneEnds.findIndex((end) => end < row);
+      if (lane === -1) lane = laneEnds.length;
+      laneEnds[lane] = row + span - 1;
+      groupEnd = Math.max(groupEnd, row + span - 1);
+      const card = { item, row, span, lane, lanes: 1, choice: marked.has(item) };
+      group.push(card);
+      cards.push(card);
+    }
+    closeGroup();
+
+    const covered = new Set(cards.flatMap((card) => Array.from({ length: card.span }, (_, k) => card.row + k)));
+    const empty = model.periods.map((_, i) => i).filter((i) => !covered.has(i));
+    return { day, cards, empty };
+  });
+  return { periods: model.periods, days, uncertain: items.some((item) => item.uncertain) };
+}
+
 // Hungarian suffix of a year, by how its end is pronounced: 2027-es, 2023-as,
 // 2025-ös, 2026-os; round numbers by their tens: 2020-as (húsz), 2030-as
 // (harminc), 2040-es (negyven); 2100-as (száz), 2000-es (ezer).
