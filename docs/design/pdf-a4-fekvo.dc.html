@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Művészeti órarend – PDF</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Source Sans 3',system-ui,sans-serif;background:#FFFFFF;color:#3A1F06}
+</style>
+</helmet>
+<div style="width: 1123px; height: 794px; box-sizing: border-box; padding: 44px 48px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; font-family: 'Source Sans 3', system-ui, sans-serif; color: #3A1F06; overflow: hidden">
+
+<div style="flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid #761117">
+<span style="font-size: 13px; font-weight: 700; color: #3A1F06">Hunyadi Mátyás Általános Iskola</span>
+<span style="font-size: 13px; color: #6B4E30">· Művészeti képzés</span>
+<span style="margin-left: auto; font-size: 13px; color: #6B4E30">2026/2027-es tanév</span>
+</div>
+
+<div style="flex-shrink: 0; display: flex; align-items: flex-end; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #8A5A0C">MŰVÉSZETI ÓRAREND</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 28px; line-height: 1.1; color: #761117">{{title}}</h1>
+</div>
+<span style="margin-left: auto; font-size: 14px; color: #6B4E30">{{count}}</span>
+</div>
+
+<div style="flex-grow: 1; min-height: 0; display: grid; grid-template-columns: 78px repeat(5, minmax(0, 1fr)); grid-template-rows: 30px repeat(4, minmax(0, 1fr)); gap: 6px">
+<div style="grid-column: 1; grid-row: 1"></div>
+<div style="grid-column: 2; grid-row: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-bottom: 1.5px solid #761117">Hétfő</div>
+<div style="grid-column: 3; grid-row: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-bottom: 1.5px solid #761117">Kedd</div>
+<div style="grid-column: 4; grid-row: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-bottom: 1.5px solid #761117">Szerda</div>
+<div style="grid-column: 5; grid-row: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-bottom: 1.5px solid #761117">Csütörtök</div>
+<div style="grid-column: 6; grid-row: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border-bottom: 1.5px solid #761117">Péntek</div>
+
+<div style="grid-column: 1; grid-row: 2; display: flex; flex-direction: column; justify-content: center; gap: 1px"><span style="font-size: 12px; font-weight: 700; color: #8A5A0C">1. ÓRA</span><span style="font-size: 13px; font-weight: 600">12:50</span><span style="font-size: 12px; color: #6B4E30">13:35</span></div>
+<div style="grid-column: 1; grid-row: 3; display: flex; flex-direction: column; justify-content: center; gap: 1px"><span style="font-size: 12px; font-weight: 700; color: #8A5A0C">2. ÓRA</span><span style="font-size: 13px; font-weight: 600">13:45</span><span style="font-size: 12px; color: #6B4E30">14:30</span></div>
+<div style="grid-column: 1; grid-row: 4; display: flex; flex-direction: column; justify-content: center; gap: 1px"><span style="font-size: 12px; font-weight: 700; color: #8A5A0C">3. ÓRA</span><span style="font-size: 13px; font-weight: 600">14:40</span><span style="font-size: 12px; color: #6B4E30">15:25</span></div>
+<div style="grid-column: 1; grid-row: 5; display: flex; flex-direction: column; justify-content: center; gap: 1px"><span style="font-size: 12px; font-weight: 700; color: #8A5A0C">4. ÓRA</span><span style="font-size: 13px; font-weight: 600">15:35</span><span style="font-size: 12px; color: #6B4E30">16:20</span></div>
+
+<sc-for list="{{bgCells}}" as="b" hint-placeholder-count="20">
+<div style="grid-column: {{b.col}}; grid-row: {{b.row}}; border: 1px dashed #DCCBAE; border-radius: 8px"></div>
+</sc-for>
+
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="9">
+<div style="grid-column: {{c.col}}; grid-row: {{c.row}} / span {{c.span}}; background: {{c.bg}}; border: 1px solid {{c.dot}}; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 3px; overflow: hidden">
+<span style="font-family: Fraunces, serif; font-weight: 700; font-size: 15px; line-height: 1.2">{{c.name}}</span>
+<span style="font-size: 12px; font-weight: 600">{{c.time}}</span>
+<span style="margin-top: auto; font-size: 12px">{{c.teacher}}</span>
+<span style="font-size: 12px">{{c.room}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="flex-shrink: 0; display: flex; align-items: center; font-size: 12px; color: #6B4E30">
+<span>Hunyadi Mátyás Általános Iskola · Művészeti képzés</span>
+<span style="margin-left: auto; font-weight: 700; letter-spacing: 0.12em; color: #8A5A0C; border: 1px dashed #B97A12; border-radius: 999px; padding: 2px 8px">MINTAADATOK</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1123,"height":794}}'>
+class Component extends DCLogic {
+lessons() {
+var DISC = {
+'Balett': { bg: '#F4DADC', dot: '#A8434F', teachers: ['Csabai Gabriella', 'Szilágyi Gyula', 'Tibrea György'], room: 'Balett-terem' },
+'Kortárs tánc': { bg: '#F6E0CC', dot: '#B8662A', teachers: ['Simonyi Réka', 'Lajos Julianna'], room: 'Balett-terem' },
+'Néptánc': { bg: '#F5E7B8', dot: '#9A7414', teachers: ['Fundák Kristóf', 'Baranyai Barbara'], room: 'Aula' },
+'Képzőművészet': { bg: '#DCEADF', dot: '#3F7556', teachers: ['Szarka Hajnalka', 'Gergely Nóra', 'Király András'], room: 'Rajzterem' },
+'Báb és intermédia': { bg: '#DEE3F0', dot: '#3F5A8C', teachers: ['Báli Péter', 'Király András'], room: 'Műhely' },
+'Dráma': { bg: '#EADCEC', dot: '#7A4A86', teachers: ['Bródy Norbert'], room: 'Drámaterem' },
+'Zene': { bg: '#D9EAEC', dot: '#2E6D74', teachers: ['Kovács Marianna'], room: 'Zeneterem' }
+};
+var SEQ = [['Balett', 'Balett'], ['Zene', 'Szolfézs'], ['Képzőművészet', 'Képzőművészet'], ['Néptánc', 'Néptánc'], ['Dráma', 'Dráma'], ['Báb és intermédia', 'Báb és intermédia'], ['Kortárs tánc', 'Kortárs tánc'], ['Zene', 'Ének-zene'], ['Képzőművészet', 'Képzőművészet']];
+var SLOTS = [[0, '12:50', '14:30'], [0, '14:40', '15:25'], [1, '12:50', '14:30'], [1, '14:40', '16:20'], [2, '12:50', '13:35'], [2, '13:45', '15:25'], [3, '12:50', '14:30'], [3, '14:40', '15:25'], [4, '13:45', '15:25']];
+var out = [];
+for (var c = 0; c < 8; c++) {
+for (var i = 0; i < 9; i++) {
+var s = SEQ[(i + c * 2) % 9];
+var d = DISC[s[0]];
+var slot = SLOTS[i];
+out.push({ cls: (c + 1) + '.m', day: (slot[0] + c) % 5, start: slot[1], end: slot[2], tanszak: s[0], name: s[1], teacher: d.teachers[(c + i) % d.teachers.length], room: d.room, bg: d.bg, dot: d.dot });
+}
+}
+return out;
+}
+renderVals() {
+var osztaly = '3.m';
+var chosen = ['Balett', 'Képzőművészet', 'Zene'];
+var START = { '12:50': 0, '13:45': 1, '14:40': 2, '15:35': 3 };
+var END = { '13:35': 0, '14:30': 1, '15:25': 2, '16:20': 3 };
+var sel = this.lessons().filter(function (l) { return (osztaly === 'all' || l.cls === osztaly) && (chosen.length === 0 || chosen.indexOf(l.tanszak) >= 0); });
+var cells = sel.map(function (l) {
+var a = START[l.start], b = END[l.end];
+return Object.assign({}, l, { col: l.day + 2, row: a + 2, span: b - a + 1, time: l.start + '–' + l.end });
+});
+var bgCells = [];
+for (var dd = 0; dd < 5; dd++) for (var pp = 0; pp < 4; pp++) bgCells.push({ col: dd + 2, row: pp + 2 });
+return {
+title: (osztaly === 'all' ? 'Minden osztály' : osztaly + ' osztály') + ' · ' + (chosen.length === 0 ? 'minden tanszak' : (chosen.length <= 3 ? chosen.join(', ') : chosen.length + ' tanszak')),
+count: sel.length + ' foglalkozás hetente',
+cells: cells,
+bgCells: bgCells
+};
+}
+}
+</script>
+</body>
+</html>
