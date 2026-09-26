@@ -97,6 +97,10 @@ function afterPrint() {
   screenTitle = null;
 }
 
+// The print page is measured to fit (print-view.js); once the web fonts are
+// in, measure again with them.
+document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, sel));
+
 window.addEventListener("beforeprint", beforePrint);
 window.addEventListener("afterprint", afterPrint);
 window.matchMedia?.("print").addEventListener?.("change", (event) => (event.matches ? beforePrint() : afterPrint()));

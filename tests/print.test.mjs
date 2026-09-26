@@ -163,13 +163,25 @@ test("softHyphenate offers Hungarian syllable breaks only (narrow side-by-side c
   assert.equal(shown("7.b"), "7.b");
 });
 
-test("softHyphenate leaves words of at most `longerThan` letters alone (clean PDF text)", () => {
+test("softHyphenate: every digraph is one consonant; 'zsz' is z + sz", () => {
+  const shown = (text) => softHyphenate(text).split(SOFT_HYPHEN).join("-");
+  assert.equal(shown("Mátyás"), "Má-tyás");
+  assert.equal(shown("Zsuzsanna"), "Zsu-zsan-na");
+  assert.equal(shown("Erzsébet"), "Er-zsé-bet");
+  assert.equal(shown("furulyázás"), "fu-ru-lyá-zás");
+  assert.equal(shown("bodzás"), "bo-dzás");
+  assert.equal(shown("Madzsar"), "Ma-dzsar");
+  assert.equal(shown("Rajzszakkör"), "Rajz-szak-kör");
+  assert.equal(shown("Házszám"), "Ház-szám");
+  assert.equal(shown("Mazsorett"), "Ma-zso-rett");
+});
+
+test("softHyphenate leaves words of at most `longerThan` characters alone", () => {
   const shown = (text, n) => softHyphenate(text, n).split(SOFT_HYPHEN).join("-");
-  assert.equal(shown("Robotika", 8), "Robotika");
-  assert.equal(shown("Színjátszás", 8), "Szín-ját-szás");
-  assert.equal(shown("Nyitott világ", 8), "Nyitott világ");
-  assert.equal(shown("a/1./kerámia", 11), "a/1./kerámia");
-  assert.equal(shown("nagytornaterem", 11), "nagy-tor-na-te-rem");
-  assert.equal(shown("Gyerekakadémia", 11), "Gye-re-ka-ka-dé-mia");
-  assert.equal(shown("Kerámia", 0), "Ke-rá-mia");
+  assert.equal(shown("Lajos Juli", 10), "Lajos Juli");
+  assert.equal(shown("rajzstúdió", 10), "rajzstúdió");
+  assert.equal(shown("nagytornaterem", 10), "nagy-tor-na-te-rem");
+  // A word is a run without spaces: its letter runs break even if each is short.
+  assert.equal(shown("a/1./kerámia", 10), "a/1./ke-rá-mia");
+  assert.equal(shown("a/1./kerámia", 12), "a/1./kerámia");
 });

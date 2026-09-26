@@ -10,6 +10,7 @@ import {
   groupByDay,
   periodLabel,
   selectionTitle,
+  softHyphenate,
   targetParts,
   timeRange,
   visibleItems,
@@ -30,6 +31,7 @@ export const COPY = {
   classes: "Osztály: ",
 };
 
+const LONG_WORD = 10;
 const EMAIL_RE = /^[^\s@<>":?&/]+@[^\s@<>":?&/]+\.[^\s@<>":?&/]+$/;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -160,16 +162,20 @@ function itemRow(model, item, activity, isChoice, openNotes) {
     );
   }
 
+  // Teacher and room may meet a narrow column (the tablet's TEREM column):
+  // soft hyphens let a long word (over LONG_WORD letters) break at a syllable
+  // ("nagytorna-terem") in browsers without Hungarian hyphenation, not at an
+  // arbitrary letter.
   const meta =
     item.teacher || item.room
       ? el(
           "div",
           { class: "item-meta" },
           item.teacher
-            ? el("span", { class: "meta meta-teacher" }, icon("person"), el("span", { class: "sr-only", text: COPY.teacher }), el("span", { text: item.teacher }))
+            ? el("span", { class: "meta meta-teacher" }, icon("person"), el("span", { class: "sr-only", text: COPY.teacher }), el("span", { text: softHyphenate(item.teacher, LONG_WORD) }))
             : null,
           item.room
-            ? el("span", { class: "meta meta-room" }, icon("pin"), el("span", { class: "sr-only", text: COPY.room }), el("span", { text: item.room }))
+            ? el("span", { class: "meta meta-room" }, icon("pin"), el("span", { class: "sr-only", text: COPY.room }), el("span", { text: softHyphenate(item.room, LONG_WORD) }))
             : null,
         )
       : null;

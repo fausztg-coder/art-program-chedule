@@ -31,21 +31,15 @@ function choiceLabel(group, column) {
 }
 
 // Text in a split card: every word is an inline block (css/print.css), so a
-// line breaks between words where it can, and inside a word, at its Hungarian
-// syllables (softHyphenate), only when the word alone is wider than the lane.
-// tail (the "?" of an uncertain row) goes inside the last word's block: a
-// block that wraps takes the lane's full width, so nothing could follow it.
-// Only words longer than `letters` get syllable breaks: in a two-lane card
-// (about 77 px of text) every name of at most 8 letters fits at 15 px and
-// every word of at most 11 letters at 12 px (measured with the print fonts);
-// in three or more lanes every word gets them.
-const LANE_LETTERS = { name: 8, meta: 11 };
-
-function laneText(value, letters, tail = null) {
+// line breaks between words where it can. A word wider than the lane gets its
+// Hungarian syllable breaks when the page is measured (fitPrintPage), so it
+// breaks as "Képző-művészet"; the others keep no soft hyphen, which would
+// split them in the PDF's text layer. tail (the "?" of an uncertain row) goes
+// inside the last word's block: a block that wraps takes the lane's full
+// width, so nothing could follow it.
+function laneText(value, tail = null) {
   const parts = value.trim().split(/(\s+)/); // words at even indexes, the last one too
-  return parts.map((part, i) =>
-    i % 2 ? part : el("span", { class: "pp-word" }, softHyphenate(part, letters), i === parts.length - 1 ? tail : null),
-  );
+  return parts.map((part, i) => (i % 2 ? part : el("span", { class: "pp-word" }, part, i === parts.length - 1 ? tail : null)));
 }
 
 // A split card (a lane of a shared day column) is about half as wide: it
@@ -54,21 +48,21 @@ function laneText(value, letters, tail = null) {
 function card(model, entry, activity, column, belowLabel) {
   const { item } = entry;
   const split = entry.lanes > 1;
-  const budget = (kind) => (entry.lanes > 2 ? 0 : LANE_LETTERS[kind]);
-  const text = (value, kind, tail = null) => (split ? laneText(value, budget(kind), tail) : [value, tail]);
-  const uncertain = item.uncertain ? el("span", { class: "pp-uncertain", text: " ?" }) : null;
+  const text = (value, tail = null) => (split ? laneText(value, tail) : [value, tail]);
+  // A no-break space keeps the "?" with the name.
+  const uncertain = item.uncertain ? el("span", { class: "pp-uncertain", text: "\u00A0?" }) : null;
   const classes = ["pp-card", split ? "pp-split" : "", entry.lanes > 2 ? "pp-narrow" : "", belowLabel ? "pp-below-choice" : ""].filter(Boolean);
   const node = el(
     "div",
     { class: classes.join(" ") },
-    el("span", { class: "pp-name" }, text(item.activity, "name", uncertain)),
+    el("span", { class: "pp-name" }, text(item.activity, uncertain)),
     split ? null : el("span", { class: "pp-time", text: timeRange(model, item) }),
     item.teacher || item.room
       ? el(
           "span",
           { class: "pp-meta" },
-          item.teacher ? el("span", { class: "pp-teacher" }, text(item.teacher, "meta")) : null,
-          item.room ? el("span", { class: "pp-room" }, text(item.room, "meta")) : null,
+          item.teacher ? el("span", { class: "pp-teacher" }, text(item.teacher)) : null,
+          item.room ? el("span", { class: "pp-room" }, text(item.room)) : null,
         )
       : null,
   );
@@ -87,7 +81,6 @@ function grid(model, layout) {
   const activities = new Map(model.activities.map((a) => [a.id, a]));
   const node = el("div", { class: "pp-grid" }, el("div", { class: "pp-corner" }));
   node.style.setProperty("--rows", String(layout.periods.length));
-  layout.days.forEach(({ day }, d) => node.append(place(el("div", { class: "pp-day", text: day.name }), d + 2, 1)));
   layout.periods.forEach((p, r) =>
     node.append(
       place(
@@ -103,7 +96,9 @@ function grid(model, layout) {
       ),
     ),
   );
-  layout.days.forEach(({ empty, cards, groups }, d) => {
+  // Day by day, so the PDF text reads each day's name, then its lessons (§6.3).
+  layout.days.forEach(({ day, empty, cards, groups }, d) => {
+    node.append(place(el("div", { class: "pp-day", text: day.name }), d + 2, 1));
     empty.forEach((r) => node.append(place(el("div", { class: "pp-empty" }), d + 2, r + 2)));
     const labelled = groups.filter((group) => group.choice);
     // The label comes right before its group's cards (reading order).
@@ -150,4 +145,32 @@ export function renderPrintPage(container, model, sel) {
   ];
   // replaceChildren would turn a null into the text "null".
   container.replaceChildren(...parts.filter(Boolean));
+  fitPrintPage(container);
+}
+
+// The page is laid out off screen with the print styles and what does not fit
+// is adjusted, so no text is cut off (SPEC §6.4, owner decision 2026-09-26):
+// a word wider than its lane gets soft hyphens at its syllables, and a card
+// whose text is still too tall gets a tighter setting, in two steps
+// (css/print.css). Measured with the fonts the page has at that moment; main.js
+// measures again right before printing and once the web fonts have loaded.
+export function fitPrintPage(container) {
+  if (!container.querySelector(".pp-card")) return;
+  container.classList.add("pp-measuring");
+  try {
+    for (const word of container.querySelectorAll(".pp-word")) {
+      const style = getComputedStyle(word);
+      const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.3;
+      const text = word.firstChild;
+      if (word.offsetHeight > line * 1.5 && text && text.nodeType === Node.TEXT_NODE) text.data = softHyphenate(text.data);
+    }
+    for (const card of container.querySelectorAll(".pp-card")) {
+      for (const step of ["pp-tight", "pp-tighter"]) {
+        if (card.scrollHeight <= card.clientHeight) break;
+        card.classList.add(step);
+      }
+    }
+  } finally {
+    container.classList.remove("pp-measuring");
+  }
 }

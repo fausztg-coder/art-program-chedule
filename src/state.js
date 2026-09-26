@@ -209,7 +209,9 @@ function syllableBreaks(word) {
   const lower = word.toLowerCase();
   const units = []; // letters, a digraph as one unit
   for (let i = 0; i < word.length; ) {
-    const digraph = DIGRAPHS.find((d) => lower.startsWith(d, i));
+    let digraph = DIGRAPHS.find((d) => lower.startsWith(d, i));
+    // "zsz" is z + sz (rajz|szakkör, ház|szám), not zs + z.
+    if (digraph === "zs" && lower.startsWith("sz", i + 1)) digraph = undefined;
     units.push({ at: i, letter: lower[i], digraph: Boolean(digraph), vowel: !digraph && VOWELS.includes(lower[i]) });
     i += digraph ? digraph.length : 1;
   }
@@ -228,13 +230,16 @@ function syllableBreaks(word) {
   return breaks;
 }
 
-// longerThan: letter runs of at most this many letters stay as they are.
 // A soft hyphen that no line break uses still splits the word in the PDF's
-// text layer (Chromium writes "Ke rá mia"), so only words that may not fit
-// get them.
+// text layer (Chromium writes "Ke rá mia"), so print-view.js gives them only
+// to words that do not fit. longerThan: words (runs without spaces, such as
+// "a/1./kerámia") of at most this many characters stay as they are.
 export function softHyphenate(text, longerThan = 0) {
-  return String(text).replace(/\p{L}+/gu, (word) => {
-    if (word.length <= longerThan) return word;
+  return String(text).replace(/\S+/g, (token) => (token.length <= longerThan ? token : hyphenateLetters(token)));
+}
+
+function hyphenateLetters(token) {
+  return token.replace(/\p{L}+/gu, (word) => {
     let out = "";
     let from = 0;
     for (const at of syllableBreaks(word)) {

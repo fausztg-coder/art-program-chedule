@@ -1,22 +1,30 @@
 /* Print page (SPEC 1.1 §6.3–6.4), after docs/design/pdf-a4-fekvo.dc.html:
-   one A4 landscape page; the screen interface is hidden. Loaded with
-   media="print", so none of this reaches the screen. */
+   one A4 landscape page; the screen interface is hidden. The page's own rules
+   (.print-page, .pp-*) apply to every medium: on screen the page is hidden
+   (css/app.css), except for the moment src/print-view.js lays it out off
+   screen to measure what fits. */
 
 @page { size: A4 landscape; margin: 11.6mm 12.7mm; }
 
-html, body { background: #fff; }
-body > :not(.print-page) { display: none !important; }
+@media print {
+  html, body { background: #fff; }
+  body > :not(.print-page) { display: none !important; }
+  .print-page { display: flex !important; }
+}
 
 .print-page, .print-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 /* The full width of the page area, and the height of an A4 landscape page
    area (210 mm minus the margins), a little short of it so rounding never
-   pushes the page onto a second sheet. A browser that ignores @page size
-   (another paper size or portrait) still gets one unclipped page. */
+   pushes the page onto a second sheet. On other paper the page stays one
+   sheet and is not cut off at the right edge, but its cards get narrower. */
 .print-page {
-  display: flex; flex-direction: column; gap: 14px;
+  flex-direction: column; gap: 14px;
   width: 100%; height: 186mm; overflow: hidden; break-inside: avoid;
   background: #fff; color: var(--ink); font-family: var(--font-ui);
 }
+/* Off-screen layout at the A4 page area's width, for print-view.js to
+   measure; it is never painted (the class is removed in the same task). */
+.print-page.pp-measuring { display: flex; position: fixed; top: 0; left: -10000px; width: 271.6mm; visibility: hidden; }
 
 /* 1. Letterhead */
 .pp-letterhead { flex: none; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid var(--brand-burgundy); font-size: 13px; }
@@ -63,18 +71,19 @@ body > :not(.print-page) { display: none !important; }
    first row, with a thin bracket over the lanes; the cards that start in that
    row sit below the strip. */
 .pp-choice {
-  align-self: start; height: var(--choice-strip); display: flex; align-items: center; gap: 6px;
+  /* Half of the strip sits in the 6 px row gap above the group. */
+  align-self: start; height: var(--choice-strip); margin-top: -6px; display: flex; align-items: center; gap: 6px;
   font-size: 12px; line-height: 1; font-weight: 700; color: var(--accent-text);
 }
 .pp-choice::before, .pp-choice::after { content: ""; flex: 1 1 0; align-self: stretch; margin-top: 6px; border-top: 1px solid currentColor; }
 .pp-choice::before { border-left: 1px solid currentColor; border-top-left-radius: 4px; }
 .pp-choice::after { border-right: 1px solid currentColor; border-top-right-radius: 4px; }
-.pp-below-choice { margin-top: calc(var(--choice-strip) + 3px); }
+.pp-below-choice { margin-top: calc(var(--choice-strip) - 6px + 3px); }
 
 /* A split card is half a day column wide (~87 px): tighter padding and no
    time line (print-view.js). Each word is an inline block, so lines break
    between words; a word wider than the lane breaks inside, only at the soft
-   hyphens print-view.js puts at its Hungarian syllable boundaries. */
+   hyphens print-view.js gives it (Hungarian syllables) after measuring. */
 .pp-split { padding: 6px 5px; gap: 2px; }
 .pp-split .pp-name { line-height: 1.15; hyphens: manual; }
 .pp-split .pp-meta { line-height: 1.2; hyphens: manual; }
@@ -83,9 +92,18 @@ body > :not(.print-page) { display: none !important; }
 .pp-narrow { padding: 4px; }
 .pp-narrow .pp-name { font-size: 13px; }
 
-/* overflow-wrap: last resort only, for a word without soft hyphens that still
-   does not fit: broken rather than cut off. Soft hyphens are used first. */
+/* overflow-wrap: last resort only (e.g. paper narrower than A4), for a word
+   that still does not fit: broken rather than cut off. */
 .pp-word { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+
+/* A card whose text is too tall after measuring gets a tighter setting, in
+   two steps (print-view.js); nothing goes below 12 px. */
+.pp-tight { gap: 0; }
+.pp-tight .pp-name { font-size: 13px; line-height: 1.1; }
+.pp-tight .pp-meta { line-height: 1.1; }
+.pp-tighter { padding-top: 3px; padding-bottom: 3px; }
+.pp-tighter .pp-name { font-size: 12px; line-height: 1.05; }
+.pp-tighter .pp-meta { line-height: 1.05; }
 
 /* 4. Footer */
 .pp-legend, .pp-footer { flex: none; font-size: 12px; color: var(--ink-muted-print); }

@@ -93,7 +93,7 @@ Minden szélességen és böngészőben:
 4. ☐ **800 px:** asztali elrendezés (táblázatszerű sorok, oszlopfejléc), a tartalom két oldalán 24 px; az Osztály oszlop itt keskeny (80 px), a fejlécben nincs körvonal.
 5. ☐ **390 px:** mobil elrendezés: kártyák soronként, a cím és a darabszám egymás alatt, a PDF-gomb teljes szélességű (48 px magas); a fejlécben kisebb arany korong, körvonal nélkül.
 6. ☐ **Fejléc minden szélességen** (fejlesztői eszközökben húzd a szélességet 320 és 1440 px között, különösen 320, 360, 375, 390, 414, 430, 768, 800, 890 px): az iskolanév, a „MŰVÉSZETI KÉPZÉS” és a „Művészeti órarend” cím egyetlen betűje sem kerül az arany korongra.
-7. ☐ Hosszú teremnév keskeny oszlopban szótagolva vagy szóhatáron törik, nem lóg ki (pl. „nagytornaterem” 800 px-en). Megjegyzés: szótagolás csak ott van, ahol a böngésző ismeri a magyar elválasztást.
+7. ☐ Hosszú teremnév vagy tanárnév keskeny oszlopban szótaghatáron, kötőjellel törik, nem lóg ki és nem törik betű közben (pl. „nagytornate-rem” 800 px-en, „a/1./kerá-mia” 768 px-en).
 8. ☐ **320 px** (kis telefon) és WCAG szövegtávolság (pl. „Text Spacing” könyvjelző): az időpont egy sorban marad („15:30–16:00”), az osztály szövege a részei között törik, semmi nem csúszik egymásra.
 9. ☐ Betűtípusok: a címek Fraunces, a felület Source Sans 3; az ő és ű betűk helyesek. Ha a Google Fonts nem tölt be, az oldal Georgia / rendszerbetűvel is olvasható.
 10. ☐ Vesd össze a `docs/design/desktop.dc.html` és `docs/design/mobil.dc.html` méreteivel, színeivel (a mintaadataik nem igazak, csak az elrendezés számít).
@@ -138,7 +138,7 @@ Mind a négy böngészőben (asztali Chrome, asztali Safari, iOS Safari, Android
 
 **Indítás:**
 
-1. ☐ Válassz egy osztályt, és kattints a „PDF/nyomtatás” gombra: megnyílik a nyomtatási párbeszéd.
+1. ☐ Válassz egy osztályt, és kattints a „PDF/nyomtatás” gombra: megnyílik a nyomtatási párbeszéd. **Csak billentyűzettel** is: Tab-bal lépj a gombra; Enterrel és Szóközzel is megnyílik, az aktuális választással.
 2. ☐ A előnézetben egyetlen A4 fekvő oldal látszik; a képernyős felület (fejléc, választó, lista, gombok, sávok, Adathibák) nincs rajta.
 3. ☐ **Ctrl+P / Cmd+P** (vagy a böngésző menüjéből Nyomtatás): ugyanez a nyomtatási nézet jelenik meg, az aktuális választással. Válts osztályt, és nyomtass újra Ctrl+P-vel: az új osztály látszik.
 4. ☐ „Összes” osztálynál a gomb le van tiltva; Ctrl+P-re a lapon csak ez áll: „Válassz egy osztályt a nyomtatáshoz.”
@@ -153,7 +153,7 @@ Mind a négy böngészőben (asztali Chrome, asztali Safari, iOS Safari, Android
 10. ☐ Rács: bal oldalt az órák („7. ÓRA”, kezdés, vége), felül Hétfő–Péntek; az Órák fül minden órájára egy egyforma magas sor, akkor is, ha az osztálynak abban az órában nincs foglalkozása (szaggatott üres cella).
 11. ☐ Az órakártyák a tanszak színével (halvány kitöltés, sötétebb keret), dupla óra két sort fog át. Szöveg: név, időpont, alul tanár és terem (ami a Sheetben hiányzik, az kimarad).
 12. ☐ Csak a kijelölt tanszakok kártyái vannak rajta; tanszak-„Összes”-nél az osztály minden foglalkozása.
-13. ☐ Átfedő órák (pl. 4.a kedd 8–9. és 9. óra, csütörtök 7–8. és 8–9. óra): a kártyák a nap oszlopában **egymás mellett**, egyforma széles sávokban állnak, mindegyik a saját óráin. A csoport fölött egyetlen „VÁLASZTHATÓ” felirat fut a nap oszlopán, vékony zárójellel. A keskeny kártyákon nincs időpont (az óraoszlop mutatja). Semmilyen szöveg nincs levágva; a hosszú szó csak szótaghatáron, kötőjellel törik („Képző-művészet”, „nagytornate-rem”), betű közben soha.
+13. ☐ Átfedő órák (pl. 4.a kedd 8–9. és 9. óra, csütörtök 7–8. és 8–9. óra): a kártyák a nap oszlopában **egymás mellett**, egyforma széles sávokban állnak, mindegyik a saját óráin. A csoport fölött egyetlen „VÁLASZTHATÓ” felirat fut a nap oszlopán, vékony zárójellel. A keskeny kártyákon nincs időpont (az óraoszlop mutatja). Semmilyen szöveg nincs levágva; a hosszú szó csak szótaghatáron, kötőjellel törik („Képző-művészet”, „nagytornate-rem”), betű közben soha. Ha egy keskeny kártya szövege így sem fér el (pl. egyórás választható óra hosszú névvel és teremmel), a kártya szedése kicsit tömörebb (kisebb név, szorosabb sorok), de a szöveg teljes.
 14. ☐ Bizonytalan sor: a név után „?”, és a lábléc fölött: „? = az adat pontosítás alatt”. Bizonytalan sor nélkül ez a sor nincs ott.
 15. ☐ Lábléc: „Hunyadi Mátyás Általános Iskola · Művészeti képzés”.
 16. ☐ A PDF-ben a szöveg kijelölhető és kereshető (pl. keress rá: „Kerámia”).
@@ -161,7 +161,7 @@ Mind a négy böngészőben (asztali Chrome, asztali Safari, iOS Safari, Android
 18. ☐ **Szürkeárnyalatos nyomtatás** (a párbeszédben Színes → Fekete-fehér, vagy valódi nyomtató): minden kártya olvasható, a tanszak nevéből azonosítható; a keretek és a szaggatott üres cellák látszanak.
 19. ☐ A böngésző saját fejléce/lábléce (URL, dátum) a párbeszédben kikapcsolható („Fejlécek és láblécek”); bekapcsolva sem tolja a tartalmat második oldalra.
 
-Ismert korlát: ha egy osztálynál egy idősávba **három vagy több** foglalkozás esik (a mostani adatban legfeljebb kettő), a sávok nagyon keskenyek; hosszú teljes tanárnévvel egy-egy sor levágódhat. Ilyenkor nézd meg az adott osztály PDF-jét.
+Ismert korlát: ha egy osztálynál egy idősávba **három vagy több** foglalkozás esik (a mostani adatban legfeljebb kettő), a sávok nagyon keskenyek; a legtömörebb szedéssel is levágódhat egy sor, ha a tanárnév teljes név (a SPEC szerint csak keresztnév lehet). Ilyenkor nézd meg az adott osztály PDF-jét.
 
 ## K. Ami nem lehet az oldalon (8.18)
 

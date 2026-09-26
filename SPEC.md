@@ -234,7 +234,7 @@ Minden vezérlő legalább 44 px magas.
 
 - Asztali: arany korong 420 px, jobbra −40 px / fent −190 px; körvonal 260 px, 1.5 px `decor-ring`, jobbra 300 px / fent 60 px.
 - Mobil: arany korong 220 px, jobbra −90 px / fent −120 px; körvonal nincs.
-- A fejléc szövege sosem kerülhet a korongra (a kontraszt ott 1.95:1)¹. Ahol a fenti hely a szövegre lógna, a korong jobbra és feljebb tolódik: táblagépen 890 px alatt jobbra −165 px, és táblagépen körvonal nincs; mobilon 448 px alatt −60 / −160 px, 400 px alatt −100 / −160 px, 360 px alatt −145 / −150 px (jobbra / fent).
+- A fejléc szövege sosem kerülhet a korongra (a kontraszt ott 1.95:1)¹. Ahol a fenti hely a szövegre lógna, a korong lépcsőkben máshová kerül (mérve, legalább 6 px távolsággal a szövegtől): táblagépen 890 px alatt jobbra −165 px, és táblagépen körvonal nincs; mobilon 448 px alatt −60 / −160 px, 400 px alatt −100 / −160 px, 360 px alatt −145 / −150 px (jobbra / fent).
 
 ¹ A megrendelő döntése, 2026-09-26.
 
@@ -385,7 +385,7 @@ Margók: 44 px fent és lent, 48 px bal és jobb oldalt. A szakaszok között 14
 | Üres idősáv | 1 px szaggatott #DCCBAE körvonal, 8 px lekerekítés |
 | Órakártya | tanszak-tint kitöltés, 1 px keret a pöttyszínnel, 8 px lekerekítés, padding 8 × 10 px; annyi sort fog át, ahány órás (dupla óra = két sor) |
 | Órakártya szövege | név (Fraunces 700, 15 px); időpont (12 px, 600); tanár és terem (12 px) a kártya alján |
-| Választható idősáv² | az egymással átfedő kártyák a nap oszlopában **egymás mellett**, egyenlő szélességű sávokban állnak; mindegyik a saját sávjában fogja át a saját óráit. Az ilyen csoport fölött egyetlen „VÁLASZTHATÓ” jelölés (12 px, 700, `accent-text`, fehér alapon) fut végig a nap oszlopán, vékony zárójellel a sávok fölött. A keskeny (sávos) kártyán nincs időpont (az óraoszlop mutatja), a padding 6 × 5 px; a túl hosszú szó csak magyar szótaghatáron, kötőjellel törik. Három vagy több sávnál a név 13 px, a padding 4 px. |
+| Választható idősáv² | az egymással átfedő kártyák a nap oszlopában **egymás mellett**, egyenlő szélességű sávokban állnak; mindegyik a saját sávjában fogja át a saját óráit. Az ilyen csoport fölött egyetlen „VÁLASZTHATÓ” jelölés (12 px, 700, `accent-text`, fehér alapon) fut végig a nap oszlopán, vékony zárójellel a sávok fölött. A keskeny (sávos) kártyán nincs időpont (az óraoszlop mutatja), a padding 6 × 5 px; a túl hosszú szó csak magyar szótaghatáron, kötőjellel törik. Három vagy több sávnál a név 13 px, a padding 4 px. Ha egy kártya szövege így sem fér el, a kártya szedése két lépésben tömörebb (sorköz, a név 13, majd 12 px); 12 px alá semmi nem megy. |
 | Bizonytalan | a név után „?” |
 
 ² A megrendelő döntése, 2026-09-26: az eredeti „a cella függőlegesen egyenlő részekre osztva” helyett. A SPEC méreteivel a félszéles kártyára nem fért ki a szöveg (a „VÁLASZTHATÓ” 75 px, a hely 67 px).
