@@ -68,10 +68,10 @@ test("sample mode runs the sample CSVs through the full pipeline", async () => {
   assert.equal(result.fallbackReason, undefined);
   assert.equal(result.model.source, "sample");
   assert.equal(result.model.generatedAt, "2026-10-01T08:00:00Z");
-  assert.equal(result.model.slots.length, 43);
+  assert.equal(result.model.items.length, 28);
   assert.deepEqual(calls.map((c) => c.url).sort(), TABS.map(sampleUrl).sort());
   assert.ok(calls.every((c) => c.init.cache === "no-store" && c.init.signal));
-  assert.equal(new Set(calls.map((c) => c.init.signal)).size, 1, "one AbortController for the whole batch");
+  assert.equal(new Set(calls.map((c) => c.init.signal)).size, TABS.length, "each tab has its own timeout (SPEC 1.1 §2.1)");
 });
 
 test("live mode fetches the published Sheet URLs", async () => {
@@ -79,7 +79,7 @@ test("live mode fetches the published Sheet URLs", async () => {
   const result = await loadData(LIVE_CONFIG, { mode: "live", fetch });
   assert.equal(result.origin, "live");
   assert.equal(result.model.source, "sheet");
-  assert.equal(result.model.slots.length, 43);
+  assert.equal(result.model.items.length, 28);
   assert.deepEqual(
     calls.map((c) => c.url).sort(),
     TABS.map((tab) => csvUrl(LIVE_CONFIG, tab)).sort(),
@@ -117,7 +117,7 @@ test("falls back to the snapshot when the data is structurally invalid", async (
 });
 
 test("falls back to the snapshot after the batch timeout", async () => {
-  await assertFallback({ [csvUrl(LIVE_CONFIG, "foglalkozasok")]: hang }, /timeout after 200 ms/);
+  await assertFallback({ [csvUrl(LIVE_CONFIG, "foglalkozasok")]: hang }, /Foglalkozások: timeout after 200 ms/);
 });
 
 test("sample mode falls back too", async () => {
@@ -137,7 +137,9 @@ test("rejects when the snapshot also fails, keeping both reasons", async () => {
 
 test("rejects a snapshot of an unexpected format", async () => {
   const variants = [
-    { ...SNAPSHOT, version: 2 },
+    { ...SNAPSHOT, version: 1 },
+    { ...SNAPSHOT, items: [...SNAPSHOT.items, { ...SNAPSHOT.items[0], first: 9, last: 8 }] },
+    { ...SNAPSHOT, activities: [{ ...SNAPSHOT.activities[0], tint: undefined }, ...SNAPSHOT.activities.slice(1)] },
     { ...SNAPSHOT, classes: [] },
     { ...SNAPSHOT, periods: [] },
     { ...SNAPSHOT, settings: null },
@@ -145,10 +147,10 @@ test("rejects a snapshot of an unexpected format", async () => {
     { ...SNAPSHOT, generatedAt: "" },
     { ...SNAPSHOT, generatedAt: "tegnap" },
     { ...SNAPSHOT, settings: { ...SNAPSHOT.settings, tanev: 2027 } },
-    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], period: 99 }] },
-    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], day: "V" }] },
-    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], activityId: "nincs" }] },
-    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], targets: null }] },
+    { ...SNAPSHOT, items: [...SNAPSHOT.items, { ...SNAPSHOT.items[0], last: 99 }] },
+    { ...SNAPSHOT, items: [...SNAPSHOT.items, { ...SNAPSHOT.items[0], day: "V" }] },
+    { ...SNAPSHOT, items: [...SNAPSHOT.items, { ...SNAPSHOT.items[0], activityId: "nincs" }] },
+    { ...SNAPSHOT, items: [...SNAPSHOT.items, { ...SNAPSHOT.items[0], targets: null }] },
     [],
   ];
   for (const body of variants.map((v) => JSON.stringify(v))) {

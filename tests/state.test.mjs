@@ -16,7 +16,10 @@ import {
   selectClass,
   selectGrade,
 } from "../src/state.js";
-import { sampleTables, buildOk, withTab } from "./helpers.mjs";
+import { sampleTables, buildOk as buildModelOk, withTab, withSlots } from "./helpers.mjs";
+
+// These helpers work on the 1.0 slot model (derived with slotsOf).
+const buildOk = (tables) => withSlots(buildModelOk(tables));
 
 const sample = buildOk(sampleTables());
 

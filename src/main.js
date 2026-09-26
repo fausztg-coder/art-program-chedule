@@ -2,7 +2,7 @@
 
 import config from "../config.js";
 import { loadData, pickMode } from "./load.js";
-import { slotsForClass, TAB_NAMES } from "./model.js";
+import { slotsForClass, slotsOf, TAB_NAMES } from "./model.js";
 import { summaryText } from "./summary.js";
 import {
   ALL,
@@ -62,7 +62,8 @@ let copyTimer = 0;
 // Data
 
 function setModel(data) {
-  model = data;
+  // The 1.0 screen works on one slot per lesson; milestone 2 replaces it.
+  model = { ...data, slots: slotsOf(data) };
   activityIndex = new Map(model.activities.map((a, i) => [a.id, i]));
   activityById = new Map(model.activities.map((a) => [a.id, a]));
   slotIndex = new Map(model.slots.map((s, i) => [s, i]));

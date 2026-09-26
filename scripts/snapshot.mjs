@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import config from "../config.js";
 import { parseCSV } from "../src/csv.js";
-import { buildModel, csvUrl, TABS, TAB_NAMES } from "../src/model.js";
+import { buildModel, csvUrl, MODEL_VERSION, TABS, TAB_NAMES } from "../src/model.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GUARD_RATIO = 0.5;
@@ -133,10 +133,12 @@ async function main() {
     }
     existing = null;
   }
-  const previousSlots = existing && Array.isArray(existing.slots) ? existing.slots.length : 0;
-  if (!opts.force && model.slots.length < previousSlots * GUARD_RATIO) {
+  // Row counts are only comparable between snapshots of the same version.
+  const comparable = existing && existing.version === MODEL_VERSION && Array.isArray(existing.items);
+  const previousItems = comparable ? existing.items.length : 0;
+  if (!opts.force && model.items.length < previousItems * GUARD_RATIO) {
     console.error(
-      `error: sanity guard: ${model.slots.length} slots is below ${GUARD_RATIO * 100} % of the existing ${previousSlots}; use --force to override`,
+      `error: sanity guard: ${model.items.length} rows is below ${GUARD_RATIO * 100} % of the existing ${previousItems}; use --force to override`,
     );
     return 1;
   }
@@ -145,7 +147,7 @@ async function main() {
   if (!changed) model.generatedAt = existing.generatedAt;
 
   console.log(
-    `slots=${model.slots.length} activities=${model.activities.length} classes=${model.classes.length} issues=${model.issues.length} changed=${changed ? "yes" : "no"}`,
+    `rows=${model.items.length} activities=${model.activities.length} classes=${model.classes.length} issues=${model.issues.length} changed=${changed ? "yes" : "no"}`,
   );
   if (changed && !opts.check) await writeFile(opts.out, serialize(model));
   return 0;
