@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-26T15:17:07Z",
-  "source": "sample",
+  "generatedAt": "2026-09-26T16:04:53Z",
+  "source": "sheet",
   "settings": {
     "tanev": "2026/2027",
     "iskola": "Hunyadi Mátyás Általános Iskola, XIII. kerület",
@@ -32,6 +32,11 @@
   ],
   "periods": [
     {
+      "n": 6,
+      "from": "13:00",
+      "to": "13:45"
+    },
+    {
       "n": 7,
       "from": "14:00",
       "to": "14:45"
@@ -56,7 +61,6 @@
     "1.a",
     "1.b",
     "2.a",
-    "2.b",
     "3.a",
     "3.b",
     "4.a",
@@ -65,10 +69,13 @@
     "5.b",
     "6.a",
     "6.b",
+    "6.m",
     "7.a",
     "7.b",
+    "7.m",
     "8.a",
-    "8.b"
+    "8.b",
+    "8.m"
   ],
   "activities": [
     {
@@ -132,16 +139,22 @@
       "tint": "#e7e9ec"
     },
     {
-      "id": "ek",
-      "name": "ÉK",
-      "color": "#0f8f8f",
-      "tint": "#d4ebeb"
+      "id": "enekkar",
+      "name": "Énekkar",
+      "color": "#ff00ff",
+      "tint": "#ffd1ff"
     },
     {
       "id": "robotika",
       "name": "Robotika",
       "color": "#8a6d3b",
       "tint": "#eae5dc"
+    },
+    {
+      "id": "joga",
+      "name": "Jóga",
+      "color": "#6d9eeb",
+      "tint": "#e5eefb"
     }
   ],
   "items": [
@@ -151,7 +164,7 @@
       "last": 7,
       "activityId": "babjatek",
       "activity": "Bábjáték",
-      "teacher": "Csilla",
+      "teacher": "Benkő Csilla",
       "room": "rajzstúdió",
       "targets": [
         "1",
@@ -183,7 +196,7 @@
       "last": 8,
       "activityId": "szinjatszas",
       "activity": "Színjátszás",
-      "teacher": "Réka",
+      "teacher": "Simonyi Réka",
       "room": "kistorna",
       "targets": [
         "5",
@@ -200,7 +213,7 @@
       "last": 8,
       "activityId": "musical",
       "activity": "Musical",
-      "teacher": "Dóri",
+      "teacher": "Sautek Dóra",
       "room": "balett",
       "targets": [
         "1",
@@ -217,7 +230,7 @@
       "last": 9,
       "activityId": "szinjatszas",
       "activity": "Színjátszás",
-      "teacher": "Réka",
+      "teacher": "Simonyi Réka",
       "room": "kistorna",
       "targets": [
         "1",
@@ -235,7 +248,7 @@
       "last": 7,
       "activityId": "balett",
       "activity": "Balett",
-      "teacher": "Juli",
+      "teacher": "Lajos Juli",
       "room": "balett",
       "targets": [
         "1",
@@ -251,14 +264,14 @@
       "last": 8,
       "activityId": "keramia",
       "activity": "Kerámia",
-      "teacher": "Amy",
+      "teacher": "Horváth Simon Amy",
       "room": "a/1./kerámia",
       "targets": [
         "5",
         "6"
       ],
-      "uncertain": true,
-      "note": "Amy sora 3.–6. évfolyamot ír, a termi sor 5.–6.-ot. A 8. órában az évfolyamsor szerint az 5. évfolyamnak modern tánca van.",
+      "uncertain": false,
+      "note": "",
       "sheetRow": 8
     },
     {
@@ -267,7 +280,7 @@
       "last": 8,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Lotti",
+      "teacher": "Karlik Melitta",
       "room": "rajzstúdió",
       "targets": [
         "3.b"
@@ -282,7 +295,7 @@
       "last": 8,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Virág",
+      "teacher": "Tavaszi Virág",
       "room": "kisép/rajz",
       "targets": [
         "3.a"
@@ -310,16 +323,16 @@
       "day": "K",
       "first": 7,
       "last": 7,
-      "activityId": "ek",
-      "activity": "ÉK",
-      "teacher": "",
+      "activityId": "enekkar",
+      "activity": "Énekkar",
+      "teacher": "Molnár Andrea",
       "room": "",
       "targets": [
         "5",
         "6"
       ],
-      "uncertain": true,
-      "note": "A táblában csak „ÉK/5.-6.” áll, tanár és terem nélkül. A jelentése ismeretlen (énekkar?).",
+      "uncertain": false,
+      "note": "",
       "sheetRow": 12
     },
     {
@@ -328,7 +341,7 @@
       "last": 9,
       "activityId": "modern-tanc",
       "activity": "Modern tánc",
-      "teacher": "Juli",
+      "teacher": "Lajos Juli",
       "room": "nagytornaterem",
       "targets": [
         "4",
@@ -344,30 +357,14 @@
       "last": 9,
       "activityId": "szinpadi-tanc",
       "activity": "Színpadi tánc",
-      "teacher": "Ábel",
+      "teacher": "Asszú Ábel",
       "room": "balett",
       "targets": [
-        "7"
-      ],
-      "uncertain": true,
-      "note": "A tanári sorban „7.m.” áll. Itt a teljes 7. évfolyamra vonatkoztattuk.",
-      "sheetRow": 14
-    },
-    {
-      "day": "K",
-      "first": 9,
-      "last": 10,
-      "activityId": "keramia",
-      "activity": "Kerámia",
-      "teacher": "Amy",
-      "room": "a/1./kerámia",
-      "targets": [
-        "5",
-        "6"
+        "7.m"
       ],
       "uncertain": false,
       "note": "",
-      "sheetRow": 15
+      "sheetRow": 14
     },
     {
       "day": "K",
@@ -375,7 +372,22 @@
       "last": 9,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Lotti",
+      "teacher": "Karlik Melitta",
+      "room": "rajzstúdió",
+      "targets": [
+        "4"
+      ],
+      "uncertain": false,
+      "note": "",
+      "sheetRow": 15
+    },
+    {
+      "day": "K",
+      "first": 10,
+      "last": 10,
+      "activityId": "kepzomuveszet",
+      "activity": "Képzőművészet",
+      "teacher": "Karlik Melitta",
       "room": "rajzstúdió",
       "targets": [
         "4"
@@ -385,18 +397,19 @@
       "sheetRow": 16
     },
     {
-      "day": "K",
-      "first": 10,
-      "last": 10,
+      "day": "Sz",
+      "first": 7,
+      "last": 8,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Lotti",
+      "teacher": "Szarka Hajni",
       "room": "rajzstúdió",
       "targets": [
-        "4"
+        "5",
+        "6"
       ],
-      "uncertain": true,
-      "note": "Az évfolyamsorban „kép??” áll. Lotti sora 4. évfolyamot ír.",
+      "uncertain": false,
+      "note": "",
       "sheetRow": 17
     },
     {
@@ -405,11 +418,10 @@
       "last": 8,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Hajni",
-      "room": "rajzstúdió",
+      "teacher": "Tavaszi Virág",
+      "room": "kisép/rajz",
       "targets": [
-        "5",
-        "6"
+        "1"
       ],
       "uncertain": false,
       "note": "",
@@ -418,13 +430,15 @@
     {
       "day": "Sz",
       "first": 7,
-      "last": 8,
-      "activityId": "kepzomuveszet",
-      "activity": "Képzőművészet",
-      "teacher": "Virág",
-      "room": "kisép/rajz",
+      "last": 7,
+      "activityId": "robotika",
+      "activity": "Robotika",
+      "teacher": "Gyerekakadémia",
+      "room": "a/1./kerámia",
       "targets": [
-        "1"
+        "3",
+        "4",
+        "5"
       ],
       "uncertain": false,
       "note": "",
@@ -434,9 +448,26 @@
       "day": "Sz",
       "first": 8,
       "last": 8,
+      "activityId": "robotika",
+      "activity": "Robotika",
+      "teacher": "Gyerekakadémia",
+      "room": "a/1./kerámia",
+      "targets": [
+        "6",
+        "7",
+        "8"
+      ],
+      "uncertain": false,
+      "note": "",
+      "sheetRow": 20
+    },
+    {
+      "day": "Sz",
+      "first": 8,
+      "last": 8,
       "activityId": "neptanc",
       "activity": "Néptánc",
-      "teacher": "Andrea",
+      "teacher": "Gyarmathy Andrea",
       "room": "kistorna",
       "targets": [
         "1",
@@ -454,31 +485,14 @@
       "last": 9,
       "activityId": "szinpadi-tanc",
       "activity": "Színpadi tánc",
-      "teacher": "Ábel",
+      "teacher": "Asszú Ábel",
       "room": "nagytornaterem",
       "targets": [
-        "8"
+        "8.m"
       ],
-      "uncertain": true,
-      "note": "A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk.",
+      "uncertain": false,
+      "note": "",
       "sheetRow": 22
-    },
-    {
-      "day": "Cs",
-      "first": 7,
-      "last": 7,
-      "activityId": "babjatek",
-      "activity": "Bábjáték",
-      "teacher": "Csilla",
-      "room": "",
-      "targets": [
-        "1",
-        "2",
-        "3"
-      ],
-      "uncertain": true,
-      "note": "Csilla sorában zárójelben áll: „(1.-2.-3.)”. Az évfolyamsorban nem szerepel.",
-      "sheetRow": 23
     },
     {
       "day": "Cs",
@@ -486,26 +500,42 @@
       "last": 8,
       "activityId": "keramia",
       "activity": "Kerámia",
-      "teacher": "Amy",
+      "teacher": "Horváth Simon Amy",
       "room": "a/1./kerámia",
       "targets": [
-        "3",
+        "3.a",
         "4"
       ],
-      "uncertain": true,
-      "note": "Amy sora 3.–6. évfolyamot ír, a termi sor 3.–4.-et. A 8. órában az évfolyamsor szerint a 4. évfolyamnak színpadi tánca van.",
-      "sheetRow": 24
+      "uncertain": false,
+      "note": "",
+      "sheetRow": 23
     },
     {
       "day": "Cs",
       "first": 7,
-      "last": 7,
+      "last": 8,
       "activityId": "kepzomuveszet",
       "activity": "Képzőművészet",
-      "teacher": "Virág",
+      "teacher": "Tavaszi Virág",
       "room": "kisép/rajz",
       "targets": [
         "2.a"
+      ],
+      "uncertain": false,
+      "note": "",
+      "sheetRow": 24
+    },
+    {
+      "day": "Cs",
+      "first": 8,
+      "last": 9,
+      "activityId": "kepzomuveszet",
+      "activity": "Képzőművészet",
+      "teacher": "Szarka Hajni",
+      "room": "rajzstúdió",
+      "targets": [
+        "7",
+        "8"
       ],
       "uncertain": false,
       "note": "",
@@ -515,45 +545,44 @@
       "day": "Cs",
       "first": 8,
       "last": 9,
-      "activityId": "kepzomuveszet",
-      "activity": "Képzőművészet",
-      "teacher": "Hajni",
-      "room": "rajzstúdió",
+      "activityId": "szinpadi-tanc",
+      "activity": "Színpadi tánc",
+      "teacher": "Asszú Ábel",
+      "room": "nagytornaterem",
       "targets": [
-        "7",
-        "8"
+        "4",
+        "5",
+        "6"
       ],
       "uncertain": false,
       "note": "",
       "sheetRow": 26
     },
     {
-      "day": "Cs",
-      "first": 8,
-      "last": 8,
-      "activityId": "kepzomuveszet",
-      "activity": "Képzőművészet",
-      "teacher": "Virág",
-      "room": "kisép/rajz",
+      "day": "P",
+      "first": 6,
+      "last": 6,
+      "activityId": "joga",
+      "activity": "Jóga",
+      "teacher": "Mosonyi Vera",
+      "room": "kistorna",
       "targets": [
-        "2.a"
+        "3"
       ],
-      "uncertain": true,
-      "note": "Az évfolyam- és a termi sor szerint van, Virág sorából hiányzik. A tanár feltételezés.",
+      "uncertain": false,
+      "note": "",
       "sheetRow": 27
     },
     {
-      "day": "Cs",
-      "first": 8,
-      "last": 9,
-      "activityId": "szinpadi-tanc",
-      "activity": "Színpadi tánc",
-      "teacher": "Ábel",
-      "room": "nagytornaterem",
+      "day": "P",
+      "first": 6,
+      "last": 6,
+      "activityId": "joga",
+      "activity": "Jóga",
+      "teacher": "Mosonyi Vera",
+      "room": "kistorna",
       "targets": [
-        "4",
-        "5",
-        "6"
+        "4"
       ],
       "uncertain": false,
       "note": "",
@@ -563,16 +592,32 @@
       "day": "P",
       "first": 7,
       "last": 8,
-      "activityId": "modern-tanc",
-      "activity": "Modern tánc",
-      "teacher": "Juli",
+      "activityId": "balett",
+      "activity": "Balett",
+      "teacher": "Lajos Juli",
       "room": "nagytornaterem",
       "targets": [
-        "8"
+        "3",
+        "4"
       ],
       "uncertain": true,
-      "note": "A tanári sorban „8.m.” áll. Itt a teljes 8. évfolyamra vonatkoztattuk.",
+      "note": "Tanár és teremütközés",
       "sheetRow": 29
+    },
+    {
+      "day": "P",
+      "first": 7,
+      "last": 8,
+      "activityId": "modern-tanc",
+      "activity": "Modern tánc",
+      "teacher": "Lajos Juli",
+      "room": "nagytornaterem",
+      "targets": [
+        "8.m"
+      ],
+      "uncertain": true,
+      "note": "Tanár és teremütközés",
+      "sheetRow": 30
     },
     {
       "day": "P",
@@ -580,14 +625,14 @@
       "last": 10,
       "activityId": "modern-tanc",
       "activity": "Modern tánc",
-      "teacher": "Juli",
+      "teacher": "Lajos Juli",
       "room": "balett",
       "targets": [
         "6"
       ],
       "uncertain": false,
       "note": "",
-      "sheetRow": 30
+      "sheetRow": 31
     }
   ],
   "issues": []
