@@ -137,7 +137,10 @@ export const printTitle = (model, sel) => `Művészeti órarend – ${selectionT
 // stand side by side (owner decision, 2026-09-26): each group of overlapping
 // cards gets equal lanes, `lanes` wide, and every card keeps one lane for its
 // whole span. On the same first lesson the longer card takes the left lane.
-// empty: rows of a day that no card covers (dashed outline).
+// groups: the groups of side-by-side cards (two or more), each with its first
+// row, span, lane count and cards; the page marks such a group once, with one
+// "VÁLASZTHATÓ" label above its lanes (choice: whether its cards are marked,
+// §4.6). empty: rows of a day that no card covers (dashed outline).
 export function printLayout(model, sel) {
   const items = sel.cls ? visibleItems(model, sel) : [];
   const marked = choiceItems(model, sel, items);
@@ -153,11 +156,17 @@ export function printLayout(model, sel) {
       .sort((a, b) => a.row - b.row || b.span - a.span); // stable: list order otherwise
 
     const cards = [];
+    const groups = [];
     let group = [];
     let groupEnd = -1;
     let laneEnds = []; // last row taken in each lane of the current group
     const closeGroup = () => {
       group.forEach((card) => (card.lanes = laneEnds.length));
+      if (group.length > 1) {
+        const row = group[0].row; // cards are sorted by first row
+        const choice = group.some((card) => card.choice);
+        groups.push({ row, span: groupEnd - row + 1, lanes: laneEnds.length, choice, cards: group });
+      }
       group = [];
       laneEnds = [];
     };
@@ -175,9 +184,65 @@ export function printLayout(model, sel) {
 
     const covered = new Set(cards.flatMap((card) => Array.from({ length: card.span }, (_, k) => card.row + k)));
     const empty = model.periods.map((_, i) => i).filter((i) => !covered.has(i));
-    return { day, cards, empty };
+    return { day, cards, groups, empty };
   });
   return { periods: model.periods, days, uncertain: items.some((item) => item.uncertain) };
+}
+
+// Soft hyphens (U+00AD) at Hungarian syllable boundaries, for the narrow
+// side-by-side print cards: a word too wide for its lane then breaks as
+// "Képző-művészet", never at an arbitrary letter, even in a browser without a
+// Hungarian hyphenation dictionary (hyphens: auto does nothing there).
+// The phonetic rule (AkH. 12, 227–233.): one vowel per syllable; of the
+// consonants between two vowels only the last starts the next syllable; a
+// digraph (cs, dz, dzs, gy, ly, ny, sz, ty, zs) counts as one consonant.
+// No break is offered inside a doubled digraph (ssz → sz-sz would change the
+// spelling), nor where fewer than two letters would stay on a line. Compound
+// words follow the phonetic rule too (their seams are not known here). A lone
+// y counts as a consonant, so old family names (Gyarmathy) get fewer, safe
+// breaks rather than wrong ones.
+const VOWELS = "aáeéiíoóöőuúüű";
+const DIGRAPHS = ["dzs", "cs", "dz", "gy", "ly", "ny", "sz", "ty", "zs"];
+export const SOFT_HYPHEN = "\u00AD";
+
+function syllableBreaks(word) {
+  const lower = word.toLowerCase();
+  const units = []; // letters, a digraph as one unit
+  for (let i = 0; i < word.length; ) {
+    const digraph = DIGRAPHS.find((d) => lower.startsWith(d, i));
+    units.push({ at: i, letter: lower[i], digraph: Boolean(digraph), vowel: !digraph && VOWELS.includes(lower[i]) });
+    i += digraph ? digraph.length : 1;
+  }
+  const breaks = [];
+  let last = -1; // index of the previous vowel unit
+  units.forEach((unit, k) => {
+    if (!unit.vowel) return;
+    if (last >= 0) {
+      const between = units.slice(last + 1, k);
+      const doubled = between.some((u, j) => j > 0 && u.digraph && !between[j - 1].digraph && between[j - 1].letter === u.letter);
+      const at = between.length ? between[between.length - 1].at : unit.at;
+      if (!doubled && at >= 2 && word.length - at >= 2) breaks.push(at);
+    }
+    last = k;
+  });
+  return breaks;
+}
+
+// longerThan: letter runs of at most this many letters stay as they are.
+// A soft hyphen that no line break uses still splits the word in the PDF's
+// text layer (Chromium writes "Ke rá mia"), so only words that may not fit
+// get them.
+export function softHyphenate(text, longerThan = 0) {
+  return String(text).replace(/\p{L}+/gu, (word) => {
+    if (word.length <= longerThan) return word;
+    let out = "";
+    let from = 0;
+    for (const at of syllableBreaks(word)) {
+      out += word.slice(from, at) + SOFT_HYPHEN;
+      from = at;
+    }
+    return out + word.slice(from);
+  });
 }
 
 // Hungarian suffix of a year, by how its end is pronounced: 2027-es, 2023-as,

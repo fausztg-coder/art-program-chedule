@@ -33,6 +33,7 @@ body > :not(.print-page) { display: none !important; }
 
 /* 3. Grid: hour column + five days; a header row + one equal row per period */
 .pp-grid {
+  --choice-strip: 12px; /* height of the "VÁLASZTHATÓ" strip, below */
   flex: 1 1 auto; min-height: 0; display: grid; gap: 6px;
   grid-template-columns: 78px repeat(5, minmax(0, 1fr));
   grid-template-rows: 30px repeat(var(--rows), minmax(0, 1fr));
@@ -53,10 +54,38 @@ body > :not(.print-page) { display: none !important; }
   min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 3px; overflow: hidden;
   padding: 8px 10px; border: 1px solid var(--dot); border-radius: 8px; background: var(--tint); color: var(--ink);
 }
-.pp-choice { font-size: 12px; font-weight: 700; color: var(--accent-text); }
 .pp-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; line-height: 1.2; overflow-wrap: anywhere; hyphens: auto; }
 .pp-time { font-size: 12px; font-weight: 600; }
 .pp-meta { margin-top: auto; display: flex; flex-direction: column; font-size: 12px; overflow-wrap: anywhere; hyphens: auto; }
+
+/* Side-by-side cards are marked once per group (§6.4 "a kártyák tetején"):
+   one "VÁLASZTHATÓ" strip across the day column at the top of the group's
+   first row, with a thin bracket over the lanes; the cards that start in that
+   row sit below the strip. */
+.pp-choice {
+  align-self: start; height: var(--choice-strip); display: flex; align-items: center; gap: 6px;
+  font-size: 12px; line-height: 1; font-weight: 700; color: var(--accent-text);
+}
+.pp-choice::before, .pp-choice::after { content: ""; flex: 1 1 0; align-self: stretch; margin-top: 6px; border-top: 1px solid currentColor; }
+.pp-choice::before { border-left: 1px solid currentColor; border-top-left-radius: 4px; }
+.pp-choice::after { border-right: 1px solid currentColor; border-top-right-radius: 4px; }
+.pp-below-choice { margin-top: calc(var(--choice-strip) + 3px); }
+
+/* A split card is half a day column wide (~87 px): tighter padding and no
+   time line (print-view.js). Each word is an inline block, so lines break
+   between words; a word wider than the lane breaks inside, only at the soft
+   hyphens print-view.js puts at its Hungarian syllable boundaries. */
+.pp-split { padding: 6px 5px; gap: 2px; }
+.pp-split .pp-name { line-height: 1.15; hyphens: manual; }
+.pp-split .pp-meta { line-height: 1.2; hyphens: manual; }
+/* Three or more lanes (a lane of about 55 px): smaller name, less padding;
+   still no text below 12 px. */
+.pp-narrow { padding: 4px; }
+.pp-narrow .pp-name { font-size: 13px; }
+
+/* overflow-wrap: last resort only, for a word without soft hyphens that still
+   does not fit: broken rather than cut off. Soft hyphens are used first. */
+.pp-word { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
 
 /* 4. Footer */
 .pp-legend, .pp-footer { flex: none; font-size: 12px; color: var(--ink-muted-print); }

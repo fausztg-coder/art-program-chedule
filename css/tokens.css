@@ -60,9 +60,17 @@
   --chip-pad-discipline: 16px;
   --chip-min: 56px;
   --pdf-height: 44px;
-  --list-columns: 150px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) 80px;
+  /* SPEC §4.4 gives the class column 80 px; the owner widened it to 150 px on
+     desktop (2026-09-26), so "1. évf., 2. évf., 3. évf., 4. évf." takes two
+     lines, not four. The tablet keeps 80 px (below). */
+  --list-columns: 150px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) 150px;
 
   color-scheme: light;
+}
+
+/* Tablet (768–1023 px): desktop layout, the narrow class column of §4.4. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  :root { --list-columns: 150px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) 80px; }
 }
 
 @media (max-width: 767.98px) {

@@ -18,6 +18,13 @@ a { color: var(--brand-burgundy); }
 .decor { position: absolute; border-radius: 50%; pointer-events: none; }
 .decor-disc { width: 420px; height: 420px; right: -40px; top: -190px; background: var(--brand-gold); }
 .decor-ring { width: 260px; height: 260px; right: 300px; top: 60px; border: 1.5px solid var(--decor-ring); }
+/* Owner decision (2026-09-26): no header text on the gold disc (1.95:1).
+   The SPEC §4.4 positions stay where they are clear of the text (measured
+   with the real fonts, at least 6 px): from 890 px on the tablet and from
+   448 px on mobile. Narrower screens move the disc right and up (the mobile
+   steps are after the mobile block below). The tablet leaves out the ring. */
+@media (min-width: 768px) and (max-width: 1023.98px) { .decor-ring { display: none; } }
+@media (min-width: 768px) and (max-width: 889.98px) { .decor-disc { right: -165px; } }
 .header-inner { position: relative; padding: var(--header-pad-top) 0 var(--header-pad-bottom); display: flex; flex-direction: column; gap: var(--header-gap); }
 .school { display: flex; flex-direction: column; gap: var(--school-gap); }
 .school-name { font-family: var(--font-display); font-weight: 600; font-size: var(--school-size); line-height: var(--school-line); color: var(--on-brand); }
@@ -159,6 +166,12 @@ a { color: var(--brand-burgundy); }
   .empty { padding: 32px 16px; background: var(--surface); border: 1px dashed var(--border-control); border-radius: 14px; font-size: 15px; }
   .issues { padding: 0 16px; }
 }
+
+/* Narrow phones: the disc steps right and up, clear of the school name and
+   the H1 (see the header rules above). */
+@media (max-width: 447.98px) { .decor-disc { right: -60px; top: -160px; } }
+@media (max-width: 399.98px) { .decor-disc { right: -100px; top: -160px; } }
+@media (max-width: 359.98px) { .decor-disc { right: -145px; top: -150px; } }
 
 /* Windows high contrast: keep the selected state visible */
 @media (forced-colors: active) {
