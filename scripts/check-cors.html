@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CORS-ellenőrzés</title>
+<link rel="icon" href="data:,">
+</head>
+<body style="font:15px/1.5 system-ui,sans-serif;margin:24px;max-width:80ch">
+<!-- SPEC §5.3: can the browser fetch the published CSVs cross-origin?
+     Serve the repo root (python3 -m http.server) and open /scripts/check-cors.html. -->
+<h1 style="font-size:20px">CORS-ellenőrzés</h1>
+<pre id="out" style="white-space:pre-wrap">Fut…</pre>
+<script type="module">
+import config from "../config.js";
+import { csvUrl, TABS } from "../src/model.js";
+
+const out = document.getElementById("out");
+const lines = [];
+if (!config.PUB_ID) {
+  out.textContent = "A config.js-ben még nincs PUB_ID.";
+} else {
+  for (const tab of TABS) {
+    if (!config.GIDS[tab]) {
+      lines.push(`${tab}: nincs GID a config.js-ben`);
+    } else {
+      try {
+        const res = await fetch(csvUrl(config, tab), { cache: "no-store" });
+        const text = await res.text();
+        lines.push(`${tab}: HTTP ${res.status}\n  végső URL: ${res.url}\n  első sor: ${text.split(/\r?\n/)[0]}`);
+      } catch (err) {
+        // A CORS block surfaces as a TypeError without details.
+        lines.push(`${tab}: SIKERTELEN (valószínűleg CORS): ${err.message}`);
+      }
+    }
+    out.textContent = lines.join("\n");
+  }
+}
+</script>
+</body>
+</html>
