@@ -35,14 +35,14 @@ test("--from-dir data/sample --check exits 0 and writes nothing", () => {
   // live Sheet, its slot count must not make the sanity guard trip here.
   const result = run("--from-dir", "data/sample", "--check", "--out", path.join(tempDir(), "none.json"));
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^slots=43 activities=12 classes=16 issues=0 changed=yes\n$/);
+  assert.match(result.stdout, /^rows=28 activities=12 classes=16 issues=0 changed=yes\n$/);
   assert.equal(readFileSync(SNAPSHOT, "utf8"), before);
 });
 
 test("the committed snapshot is valid for the page", () => {
   const model = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
-  assert.equal(model.version, 1);
-  assert.ok(model.classes.length > 0 && model.periods.length > 0 && Array.isArray(model.slots) && Array.isArray(model.issues));
+  assert.equal(model.version, 2);
+  assert.ok(model.classes.length > 0 && model.periods.length > 0 && Array.isArray(model.items) && Array.isArray(model.issues));
 });
 
 test("a broken header exits 1 without writing", () => {
@@ -70,9 +70,9 @@ test("writes deterministic JSON and keeps generatedAt when nothing changed", () 
   const written = readFileSync(out, "utf8");
   assert.ok(written.endsWith("}\n"));
   const model = JSON.parse(written);
-  assert.deepEqual(Object.keys(model), ["version", "generatedAt", "source", "settings", "days", "periods", "classes", "activities", "slots", "issues"]);
+  assert.deepEqual(Object.keys(model), ["version", "generatedAt", "source", "settings", "days", "periods", "classes", "activities", "items", "issues"]);
   assert.equal(model.source, "sample");
-  assert.equal(model.slots.length, 43);
+  assert.equal(model.items.length, 28);
 
   const second = run("--from-dir", SAMPLE, "--out", out);
   assert.equal(second.status, 0, second.stderr);
@@ -84,11 +84,11 @@ test("row issues are reported on stderr and counted", () => {
   const dir = sampleCopy("foglalkozasok.csv", (csv) => csv.replace("Hétfő,7,7,Bábjáték", "Vasárnap,7,7,Bábjáték"));
   const result = run("--from-dir", dir, "--check");
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^slots=42 .* issues=1 /);
-  assert.match(result.stderr, /error: Foglalkozások, 2\. sor: Ismeretlen nap: „Vasárnap”/);
+  assert.match(result.stdout, /^rows=27 .* issues=1 /);
+  assert.match(result.stderr, /error: Foglalkozások, 2\. sor: ismeretlen nap: ‚Vasárnap’/);
 });
 
-test("the sanity guard trips below 50 % of the existing slots; --force overrides it", () => {
+test("the sanity guard trips below 50 % of the existing rows; --force overrides it", () => {
   const out = path.join(tempDir(), "snapshot.json");
   assert.equal(run("--from-dir", SAMPLE, "--out", out).status, 0);
   const before = readFileSync(out, "utf8");
@@ -96,14 +96,14 @@ test("the sanity guard trips below 50 % of the existing slots; --force overrides
 
   const guarded = run("--from-dir", dir, "--out", out);
   assert.equal(guarded.status, 1);
-  assert.match(guarded.stderr, /sanity guard: 2 slots is below 50 % of the existing 43/);
+  assert.match(guarded.stderr, /sanity guard: 2 rows is below 50 % of the existing 28/);
   assert.equal(readFileSync(out, "utf8"), before);
 
   assert.equal(run("--from-dir", dir, "--out", out, "--check").status, 1);
 
   const forced = run("--from-dir", dir, "--out", out, "--force");
   assert.equal(forced.status, 0, forced.stderr);
-  assert.equal(JSON.parse(readFileSync(out, "utf8")).slots.length, 2);
+  assert.equal(JSON.parse(readFileSync(out, "utf8")).items.length, 2);
 });
 
 test("live mode is skipped while the Sheet is not configured", { skip: config.PUB_ID ? "PUB_ID is set" : false }, () => {
@@ -126,5 +126,5 @@ test("an unreadable existing snapshot is an error unless --force", () => {
   assert.match(result.stderr, /cannot parse the existing snapshot/);
   assert.equal(readFileSync(out, "utf8"), '{"slots": [');
   assert.equal(run("--from-dir", SAMPLE, "--out", out, "--force").status, 0);
-  assert.equal(JSON.parse(readFileSync(out, "utf8")).slots.length, 43);
+  assert.equal(JSON.parse(readFileSync(out, "utf8")).items.length, 28);
 });

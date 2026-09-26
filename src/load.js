@@ -55,22 +55,40 @@ async function withTimeout(ms, fn) {
   }
 }
 
-// The five CSVs in parallel; one timeout covers the whole batch.
-function fetchTables(config, mode, fetch) {
+// The five CSVs in parallel, each with its own timeout (SPEC 1.1 §2.1). When
+// one fails, the others are aborted.
+async function fetchTables(config, mode, fetch) {
   const url = (tab) => (mode === "live" ? csvUrl(config, tab) : `${config.SAMPLE_BASE}${tab}.csv`);
-  return withTimeout(config.TIMEOUT_MS, async (signal) => {
-    const texts = await Promise.all(
-      TABS.map(async (tab) => {
-        const res = await fetch(url(tab), { signal, cache: "no-store" });
-        if (!res.ok) throw new Error(`${TAB_NAMES[tab]}: HTTP ${res.status}`);
-        const text = await res.text();
-        // Google answers with an HTML sign-in or error page when a tab is not published.
-        if (text.trimStart().startsWith("<")) throw new Error(`${TAB_NAMES[tab]}: HTML response instead of CSV`);
-        return text;
-      }),
-    );
+  const stop = new AbortController();
+  const fetchTab = (tab) =>
+    withTimeout(config.TIMEOUT_MS, async (signal) => {
+      const res = await fetch(url(tab), { signal: anySignal([signal, stop.signal]), cache: "no-store" });
+      if (!res.ok) throw new Error(`${TAB_NAMES[tab]}: HTTP ${res.status}`);
+      const text = await res.text();
+      // Google answers with an HTML sign-in or error page when a tab is not published.
+      if (text.trimStart().startsWith("<")) throw new Error(`${TAB_NAMES[tab]}: HTML response instead of CSV`);
+      return text;
+    }).catch((err) => {
+      if (err.message.startsWith("timeout")) err.message = `${TAB_NAMES[tab]}: ${err.message}`;
+      throw err;
+    });
+  try {
+    const texts = await Promise.all(TABS.map(fetchTab));
     return Object.fromEntries(TABS.map((tab, i) => [tab, parseCSV(texts[i])]));
-  });
+  } catch (err) {
+    stop.abort();
+    throw err;
+  }
+}
+
+// A signal that aborts when any of the given signals does.
+function anySignal(signals) {
+  const controller = new AbortController();
+  for (const signal of signals) {
+    if (signal.aborted) controller.abort();
+    else signal.addEventListener("abort", () => controller.abort(), { once: true });
+  }
+  return controller.signal;
 }
 
 function fetchSnapshot(config, fetch) {
@@ -92,15 +110,15 @@ function isValidSnapshot(data) {
     typeof data.settings === "object" && data.settings !== null && Object.values(data.settings).every(str) &&
     Array.isArray(data.days) && Array.isArray(data.periods) && data.periods.length > 0 &&
     Array.isArray(data.classes) && data.classes.length > 0 && data.classes.every(str) &&
-    Array.isArray(data.activities) && Array.isArray(data.slots) && Array.isArray(data.issues);
+    Array.isArray(data.activities) && Array.isArray(data.items) && Array.isArray(data.issues);
   if (!top) return false;
   const days = new Set(data.days.map((d) => d && d.key));
   const periods = new Set(data.periods.map((p) => p && p.n));
-  const activities = new Set(data.activities.map((a) => a && str(a.name) && a.id));
-  return data.slots.every(
+  const activities = new Set(data.activities.map((a) => a && str(a.name) && str(a.color) && str(a.tint) && a.id));
+  return data.items.every(
     (s) =>
-      s && days.has(s.day) && periods.has(s.period) && activities.has(s.activityId) && str(s.activity) &&
-      str(s.teacher) && str(s.room) && str(s.note) && Array.isArray(s.targets) &&
-      typeof s.uncertain === "boolean" && Number.isFinite(s.sheetRow),
+      s && days.has(s.day) && periods.has(s.first) && periods.has(s.last) && s.last >= s.first &&
+      activities.has(s.activityId) && str(s.activity) && str(s.teacher) && str(s.room) && str(s.note) &&
+      Array.isArray(s.targets) && typeof s.uncertain === "boolean" && Number.isFinite(s.sheetRow),
   );
 }
