@@ -11,6 +11,7 @@ A logikai részeket (célzás, szűrés, cím, darabszám, Választható, slug, 
 - A mintaadat helyben: `http://localhost:8000/?forras=minta` (a `data/sample/` CSV-i, a teljes élő feldolgozáson át).
 - Szélességek: **390 px** (telefon), **800 px** (táblagép), **1440 px** (asztali). Asztali böngészőben a fejlesztői eszközök eszköz-nézetével állítsd be; határesetnek nézd meg a 767, 768, 1023 és 1024 px-et is.
 - Böngészők: **asztali Chrome**, **asztali Safari**, **iOS Safari**, **Androidos Chrome**.
+- Asztali Safariban a Tab alapból kihagyja a gombokat: a billentyűzetes pontokhoz kapcsold be a Beállítások → Haladó → „A Tab billentyű megnyomásával a weboldal minden eleme kiemelhető” opciót (vagy használd az Option+Tab-ot).
 
 | | 390 px | 800 px | 1440 px |
 | --- | --- | --- | --- |
@@ -78,8 +79,9 @@ A logikai részeket (célzás, szűrés, cím, darabszám, Választható, slug, 
 5. ☐ **Egér / érintés:** a „?”-re kattintva (koppintva) megjelenik a sor alatt a Megjegyzés szövege, újabb kattintásra eltűnik. Máshová kattintva nyitva marad.
 6. ☐ **Érintés:** a „?” körül a koppintási terület legalább 44 px (a kör mellé koppintva is működik).
 7. ☐ **Billentyűzet:** Tab-bal a „?”-re lépve a megjegyzés magától megjelenik, továbblépve eltűnik. Enterrel vagy Szóközzel rögzíthető: így továbblépés után is nyitva marad; újabb Enter bezárja.
-8. ☐ Az utolsó sor szaggatott kerete mind a négy oldalon látszik (az eredménykártya alján is).
+8. ☐ Az utolsó sor szaggatott kerete mind a négy oldalon látszik, asztalin az eredménykártya alján, mobilon az utolsó kártyán is (pl. `?o=4.a` vagy `?o=8.m`, péntek). Mobilon az utolsó nem bizonytalan kártyának is van alsó kerete.
 9. ☐ Képernyőolvasóval (VoiceOver / TalkBack) a „?” gomb neve „Bizonytalan adat”, állapota „összecsukva/kibontva”, és felolvassa a megjegyzést.
+10. ☐ A sorok függőlegesen kiegyensúlyozottak: a tartalom alatt nincs több üres hely, mint fölötte (asztalin a sorban, mobilon a kártyában), akkor sem, ha a kártyán nincs tanár és terem.
 
 ## G. Elrendezés (8.11)
 
@@ -91,9 +93,10 @@ Minden szélességen és böngészőben:
 4. ☐ **800 px:** asztali elrendezés (táblázatszerű sorok, oszlopfejléc), a tartalom két oldalán 24 px.
 5. ☐ **390 px:** mobil elrendezés: kártyák soronként, a cím és a darabszám egymás alatt, a PDF-gomb teljes szélességű (48 px magas); a fejlécben kisebb arany korong, körvonal nélkül.
 6. ☐ Hosszú teremnév keskeny oszlopban szótagolva vagy szóhatáron törik, nem lóg ki (pl. „nagytornaterem” 800 px-en). Megjegyzés: szótagolás csak ott van, ahol a böngésző ismeri a magyar elválasztást.
-7. ☐ Betűtípusok: a címek Fraunces, a felület Source Sans 3; az ő és ű betűk helyesek. Ha a Google Fonts nem tölt be, az oldal Georgia / rendszerbetűvel is olvasható.
-8. ☐ Vesd össze a `docs/design/desktop.dc.html` és `docs/design/mobil.dc.html` méreteivel, színeivel (a mintaadataik nem igazak, csak az elrendezés számít).
-9. ☐ Egérrel: a kijelöletlen chip hoverre halvány (`bg-page`) kitöltést kap, a kijelölt chip és az aktív PDF-gomb sötétebb bordót. Érintőképernyőn nincs „beragadt” hover.
+7. ☐ **320 px** (kis telefon) és WCAG szövegtávolság (pl. „Text Spacing” könyvjelző): az időpont egy sorban marad („15:30–16:00”), az osztály szövege a részei között törik, semmi nem csúszik egymásra.
+8. ☐ Betűtípusok: a címek Fraunces, a felület Source Sans 3; az ő és ű betűk helyesek. Ha a Google Fonts nem tölt be, az oldal Georgia / rendszerbetűvel is olvasható.
+9. ☐ Vesd össze a `docs/design/desktop.dc.html` és `docs/design/mobil.dc.html` méreteivel, színeivel (a mintaadataik nem igazak, csak az elrendezés számít).
+10. ☐ Egérrel: a kijelöletlen chip hoverre halvány (`bg-page`) kitöltést kap, a kijelölt chip és az aktív PDF-gomb sötétebb bordót. Érintőképernyőn nincs „beragadt” hover.
 
 ## H. Akadálymentesség (8.12, SPEC 7.)
 
@@ -111,12 +114,13 @@ Minden szélességen és böngészőben:
 7. ☐ Választás után felolvassa az új címet és darabszámot.
 8. ☐ A letiltott PDF-gombnál felolvassa a magyarázatot.
 9. ☐ A fejléc díszítését és az ikonokat nem olvassa fel; mobilon az évfolyamszámokat („6.”) sem.
+10. ☐ Egy listaelemen végighaladva a mezőket címkével olvassa: „Tanár: …”, „Terem: …”, „Osztály: …” (az oszlopfejléc-sort nem olvassa fel külön).
 
 **Egyéb:**
 
-10. ☐ 200 %-os nagyítás (Ctrl/Cmd +) 1440 px-en: minden olvasható, nincs átfedés, nincs vízszintes görgetés.
-11. ☐ Windows kontrasztos mód (vagy Chrome DevTools → Rendering → forced-colors: active): a kijelölt chip megkülönböztethető, a PDF-gomb kerete látszik, a „?” látszik.
-12. ☐ A kijelölt chip nemcsak színben különbözik: kitöltés, feliratszín és pipa ikon is.
+11. ☐ 200 %-os nagyítás (Ctrl/Cmd +) 1440 px-en: minden olvasható, nincs átfedés, nincs vízszintes görgetés.
+12. ☐ Windows kontrasztos mód (vagy Chrome DevTools → Rendering → forced-colors: active), világos és sötét kontrasztos témával is: a kijelölt chip megkülönböztethető, egér alatt is olvasható, a fókuszgyűrű rajta is látszik; a PDF-gomb kerete látszik, a „?” látszik.
+13. ☐ A kijelölt chip nemcsak színben különbözik: kitöltés, feliratszín és pipa ikon is.
 
 ## I. Adatállapotok (8.14, 8.15)
 

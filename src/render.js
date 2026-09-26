@@ -23,6 +23,10 @@ export const COPY = {
   issuesSummary: (n) => `Adathibák (${n})`,
   issue: (tab, row, message) => `${tab}, ${row}. sor: ${message}`,
   report: "Hibát jelezz: ",
+  // Screen-reader labels for the row fields (the column headings are aria-hidden).
+  teacher: "Tanár: ",
+  room: "Terem: ",
+  classes: "Osztály: ",
 };
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -136,7 +140,7 @@ export function renderDisciplineChips(container, model, sel) {
 // Class column: each part kept whole, so the narrow column wraps between them.
 function classCell(targets) {
   const parts = targetParts(targets);
-  const children = [];
+  const children = [el("span", { class: "sr-only", text: COPY.classes })];
   parts.forEach((part, i) => {
     if (i) children.push(" ");
     children.push(el("span", { class: "target", text: i < parts.length - 1 ? `${part},` : part }));
@@ -181,8 +185,12 @@ function itemRow(model, item, activity, isChoice, openNotes) {
       ? el(
           "div",
           { class: "item-meta" },
-          item.teacher ? el("span", { class: "meta meta-teacher" }, icon("person"), el("span", { text: item.teacher })) : null,
-          item.room ? el("span", { class: "meta meta-room" }, icon("pin"), el("span", { text: item.room })) : null,
+          item.teacher
+            ? el("span", { class: "meta meta-teacher" }, icon("person"), el("span", { class: "sr-only", text: COPY.teacher }), el("span", { text: item.teacher }))
+            : null,
+          item.room
+            ? el("span", { class: "meta meta-room" }, icon("pin"), el("span", { class: "sr-only", text: COPY.room }), el("span", { text: item.room }))
+            : null,
         )
       : null;
 

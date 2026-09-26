@@ -74,10 +74,13 @@ a { color: var(--brand-burgundy); }
 .list-head { padding: 12px 28px; background: var(--bg-page); border-bottom: 1px solid var(--divider); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-text); }
 .day-title { padding: 14px 28px 6px; font-family: var(--font-display); font-weight: 600; font-size: var(--day-size); color: var(--ink); }
 .day-items { margin: 0; padding: 0; list-style: none; }
-.item { grid-template-areas: "time discipline teacher room class" "note note note note note"; align-items: center; padding: 12px 28px; border-bottom: 1px solid var(--divider-row); }
-.day:last-child .item:not(.uncertain):last-child { border-bottom: 0; }
+/* Optional parts (the note, the mobile meta row) sit in implicit rows, so a
+   hidden or missing part adds no row gap. */
+.item { grid-template-areas: "time discipline teacher room class"; align-items: center; padding: 12px 28px; border-bottom: 1px solid var(--divider-row); }
+/* Desktop only: the last row needs no divider (mobile cards keep their border). */
+@media not all and (max-width: 767.98px) { .day:last-child .item:not(.uncertain):last-child { border-bottom: 0; } }
 .item-time { grid-area: time; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 6px; }
-.time { font-size: 16px; font-weight: 700; color: var(--ink); }
+.time { font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap; }
 .lessons { font-size: 13px; color: var(--ink-muted); }
 .item-discipline { grid-area: discipline; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
 .pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 14px; border-radius: 999px; background: var(--tint); font-size: 15px; font-weight: 600; color: var(--ink); }
@@ -99,7 +102,7 @@ a { color: var(--brand-burgundy); }
 .uncertain-btn { padding: 0; cursor: pointer; }
 .uncertain-btn::before { content: ""; position: absolute; inset: -12.5px; } /* 44 px target: 11 px beyond the 1.5 px border */
 .uncertain-btn[aria-expanded="true"] { background: var(--accent-text); color: var(--surface); }
-.item-note { grid-area: note; padding: 8px 12px; border-radius: 8px; background: var(--bg-page); font-size: 14px; line-height: 1.4; color: var(--ink); white-space: pre-line; overflow-wrap: anywhere; }
+.item-note { grid-column: 1 / -1; padding: 8px 12px; border-radius: 8px; background: var(--bg-page); font-size: 14px; line-height: 1.4; color: var(--ink); white-space: pre-line; overflow-wrap: anywhere; }
 
 /* 7. Empty state (§4.5.7) */
 .empty { padding: 48px 28px; text-align: center; font-size: 16px; color: var(--ink-muted); }
@@ -111,7 +114,7 @@ a { color: var(--brand-burgundy); }
 .issues .report { margin: 0 0 16px; font-size: 14px; overflow-wrap: anywhere; }
 
 /* Hover (not designed; SPEC §13 default), only for devices that hover */
-@media (hover: hover) {
+@media (hover: hover) and (forced-colors: none) {
   .chip[aria-pressed="false"]:hover { background: var(--bg-page); }
   .chip[aria-pressed="true"]:hover, .pdf-button:not(:disabled):hover { background: var(--brand-burgundy-hover); border-color: var(--brand-burgundy-hover); }
   a:hover { color: var(--brand-burgundy-hover); }
@@ -142,13 +145,13 @@ a { color: var(--brand-burgundy); }
   .day { display: flex; flex-direction: column; gap: 8px; }
   .day-title { padding: 0 2px; }
   .day-items { display: flex; flex-direction: column; gap: 8px; }
-  .item, .item.uncertain { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "time class" "discipline discipline" "meta meta" "note note"; gap: 8px 10px; margin: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+  /* The time keeps its width; the class cell wraps between its parts instead. */
+  .item, .item.uncertain { grid-template-columns: minmax(min-content, 1fr) auto; grid-template-areas: "time class" "discipline discipline"; gap: 8px 10px; margin: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
   .item.uncertain { padding: 11.5px 13.5px; border: 1.5px dashed var(--accent-text); }
-  .day:last-child .item:last-child { border-bottom: 1px solid var(--border); }
   .item-class { justify-self: end; text-align: right; font-size: 14px; }
   .item-discipline { justify-self: start; }
   .pill { padding: 5px 12px; }
-  .item-meta { grid-area: meta; display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-secondary); }
+  .item-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-secondary); }
   .meta { gap: 6px; color: var(--ink-secondary); }
   .meta svg { width: 14px; height: 14px; color: inherit; }
 
@@ -160,4 +163,5 @@ a { color: var(--brand-burgundy); }
 @media (forced-colors: active) {
   .chip[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
   .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px HighlightText; }
+  .chip[aria-pressed="true"]:focus-visible { outline-color: CanvasText; }
 }

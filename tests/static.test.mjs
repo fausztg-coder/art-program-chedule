@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import config from "../config.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(path.join(ROOT, file), "utf8");
@@ -40,13 +41,15 @@ test("every local file index.html refers to is deployed by pages.yml", () => {
     const top = ref.split("/")[0];
     assert.ok(deployed.includes(top), `${ref} is not copied to _site (cp -r ${copy[1]})`);
   }
-  // Modules imported by the page must be deployed too.
+  // Modules imported by the page must be deployed too (imports may span lines).
   for (const file of PAGE_SCRIPTS) {
-    for (const [, spec] of read(file).matchAll(/^import .* from "(\.{1,2}\/[^"]+)";$/gm)) {
+    for (const [, spec] of read(file).matchAll(/\bfrom\s+"(\.{1,2}\/[^"]+)"/g)) {
       const target = path.relative(ROOT, path.resolve(path.dirname(path.join(ROOT, file)), spec));
       assert.ok(deployed.includes(target.split(path.sep)[0]), `${file} imports ${target}, which is not deployed`);
     }
   }
+  // The snapshot is fetched at run time, not referenced from index.html.
+  assert.ok(read(".github/workflows/pages.yml").includes(`cp ${config.SNAPSHOT_URL} _site/${path.dirname(config.SNAPSHOT_URL)}/`));
 });
 
 test("the page only talks to Google Fonts and the published Sheet", () => {
@@ -57,6 +60,8 @@ test("the page only talks to Google Fonts and the published Sheet", () => {
       const allowed = url.startsWith("https://docs.google.com/spreadsheets/") || url === "http://www.w3.org/2000/svg";
       assert.ok(allowed, `${file} refers to ${url}`);
     }
+    // Protocol-relative references: url(//host…), "//host…"
+    assert.doesNotMatch(read(file), /["'(]\/\/[a-z0-9-]+\./i, `${file} has a protocol-relative URL`);
   }
 });
 
