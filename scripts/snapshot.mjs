@@ -72,11 +72,20 @@ async function fetchSheet() {
   }
 }
 
+// null when there is no snapshot yet. An unreadable one is an error, since it
+// would otherwise disable the sanity guard silently.
 async function readExisting(file) {
+  let text;
   try {
-    return JSON.parse(await readFile(file, "utf8"));
+    text = await readFile(file, "utf8");
+  } catch (err) {
+    if (err.code === "ENOENT") return null;
+    throw err;
+  }
+  try {
+    return JSON.parse(text);
   } catch {
-    return null;
+    throw new Error(`cannot parse the existing snapshot ${file}; use --force to overwrite it`);
   }
 }
 
@@ -114,7 +123,16 @@ async function main() {
   const model = result.model;
   for (const i of model.issues) console.error(`${i.level}: ${TAB_NAMES[i.tab]}, ${i.row}. sor: ${i.message}`);
 
-  const existing = await readExisting(opts.out);
+  let existing;
+  try {
+    existing = await readExisting(opts.out);
+  } catch (err) {
+    if (!opts.force) {
+      console.error(`error: ${err.message}`);
+      return 1;
+    }
+    existing = null;
+  }
   const previousSlots = existing && Array.isArray(existing.slots) ? existing.slots.length : 0;
   if (!opts.force && model.slots.length < previousSlots * GUARD_RATIO) {
     console.error(

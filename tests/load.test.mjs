@@ -142,6 +142,13 @@ test("rejects a snapshot of an unexpected format", async () => {
     { ...SNAPSHOT, periods: [] },
     { ...SNAPSHOT, settings: null },
     { ...SNAPSHOT, issues: undefined },
+    { ...SNAPSHOT, generatedAt: "" },
+    { ...SNAPSHOT, generatedAt: "tegnap" },
+    { ...SNAPSHOT, settings: { ...SNAPSHOT.settings, tanev: 2027 } },
+    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], period: 99 }] },
+    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], day: "V" }] },
+    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], activityId: "nincs" }] },
+    { ...SNAPSHOT, slots: [...SNAPSHOT.slots, { ...SNAPSHOT.slots[0], targets: null }] },
     [],
   ];
   for (const body of variants.map((v) => JSON.stringify(v))) {
@@ -152,10 +159,29 @@ test("rejects a snapshot of an unexpected format", async () => {
 
 test("rejects a snapshot that is not JSON", async () => {
   const { fetch } = fakeFetch({ "data/snapshot.json": () => new Response("<html>", { status: 200 }) });
-  await assert.rejects(loadData(BASE_CONFIG, { mode: "snapshot", fetch }));
+  await assert.rejects(loadData(BASE_CONFIG, { mode: "snapshot", fetch }), /JSON/);
 });
 
 test("the snapshot request has a timeout too", async () => {
   const { fetch } = fakeFetch({ "data/snapshot.json": hang });
   await assert.rejects(loadData(BASE_CONFIG, { mode: "snapshot", fetch }), /timeout after 200 ms/);
+});
+
+test("the other requests are aborted after the first failure", async () => {
+  const aborted = [];
+  const { fetch } = fakeFetch({
+    [csvUrl(LIVE_CONFIG, "orak")]: () => new Response("", { status: 404 }),
+    ...Object.fromEntries(
+      TABS.filter((tab) => tab !== "orak").map((tab) => [
+        csvUrl(LIVE_CONFIG, tab),
+        (init) => {
+          init.signal.addEventListener("abort", () => aborted.push(tab));
+          return hang(init);
+        },
+      ]),
+    ),
+  });
+  const result = await loadData(LIVE_CONFIG, { mode: "live", fetch });
+  assert.match(result.fallbackReason, /Órák: HTTP 404/);
+  assert.equal(aborted.length, TABS.length - 1);
 });

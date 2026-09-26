@@ -43,7 +43,7 @@ const COPIED_MS = 1800;
 // Colours are validated by buildModel; checked again here because they go into
 // style attributes unescaped.
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+const EMAIL_RE = /^[^\s@<>":?&/]+@[^\s@<>":?&/]+\.[^\s@<>":?&/]+$/;
 
 const $ = (id) => document.getElementById(id);
 const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -118,11 +118,12 @@ function renderIssues() {
     .map((i) => `<li>${esc(COPY.issue(TAB_NAMES[i.tab] || i.tab, i.row, i.message))}</li>`)
     .join("");
   const contact = (model.settings.hibabejelentes || "").trim();
+  const address = contact.replace(/^mailto:/i, "");
   const report = $("issuesReport");
   report.hidden = !contact;
   report.innerHTML = !contact
     ? ""
-    : esc(COPY.report) + (EMAIL_RE.test(contact) ? `<a href="mailto:${esc(contact)}">${esc(contact)}</a>` : esc(contact));
+    : esc(COPY.report) + (EMAIL_RE.test(address) ? `<a href="mailto:${esc(address)}">${esc(contact)}</a>` : esc(contact));
 }
 
 function renderControls() {
@@ -347,6 +348,7 @@ async function start() {
     console.error(`Timetable could not be loaded: ${err.message}`);
     model = null;
     $("content").hidden = true;
+    $("foot").textContent = "";
     $("fatal").hidden = false;
   } finally {
     $("loading").hidden = true;

@@ -35,11 +35,12 @@ header{display:flex;flex-direction:column;gap:6px}
 .skeleton span{height:64px;border-radius:6px;background:var(--surface-2);animation:pulse 1.2s ease-in-out infinite alternate}
 .skeleton span:nth-child(-n+6){height:22px}
 @keyframes pulse{from{opacity:1}to{opacity:.5}}
-.fatal{margin:0;font-size:15px;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:12px 14px;max-width:72ch}
+/* The transparent border shows up as an outline in forced-colors mode. */
+.fatal{margin:0;font-size:15px;color:var(--warn);background:var(--warn-bg);border:1px solid transparent;border-radius:8px;padding:11px 13px;max-width:72ch}
 
 /* Banners: snapshot fallback (warning) and the school's notice (neutral) */
 .banners{display:flex;flex-direction:column;gap:8px}
-.banner{margin:0;font-size:13px;border-radius:8px;padding:8px 12px;max-width:72ch;white-space:pre-line;overflow-wrap:anywhere}
+.banner{margin:0;font-size:13px;border:1px solid transparent;border-radius:8px;padding:7px 11px;max-width:72ch;white-space:pre-line;overflow-wrap:anywhere}
 .banner.warn{color:var(--warn);background:var(--warn-bg)}
 .banner.info{color:var(--ink);background:var(--surface-2)}
 
@@ -82,6 +83,7 @@ table.week{width:100%;border-collapse:collapse;table-layout:fixed;min-width:760p
 .card{--tint:color-mix(in srgb,var(--c) 15%,var(--surface));background:var(--tint);border-left:4px solid var(--c);border-radius:6px;padding:6px 0 6px 8px;display:flex;flex-direction:column;gap:2px;transition:opacity .15s}
 .card.unc{border-top:1.5px dashed var(--warn);border-right:1.5px dashed var(--warn);border-bottom:1.5px dashed var(--warn)}
 .card.unc>.c-name{margin-right:-1.5px}
+.card.unc .c-name .qmark{margin-right:9.5px}
 .card.dim{opacity:.28}
 /* A dimmed card the user is working with (focused, or its note open) is shown in full. */
 .card.dim:focus-within,.card.dim:has(.c-note:not([hidden])){opacity:1}

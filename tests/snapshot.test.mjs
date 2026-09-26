@@ -117,3 +117,14 @@ test("an unknown argument exits 1", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /unknown argument: --bogus/);
 });
+
+test("an unreadable existing snapshot is an error unless --force", () => {
+  const out = path.join(tempDir(), "snapshot.json");
+  writeFileSync(out, '{"slots": [');
+  const result = run("--from-dir", SAMPLE, "--out", out);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /cannot parse the existing snapshot/);
+  assert.equal(readFileSync(out, "utf8"), '{"slots": [');
+  assert.equal(run("--from-dir", SAMPLE, "--out", out, "--force").status, 0);
+  assert.equal(JSON.parse(readFileSync(out, "utf8")).slots.length, 43);
+});
