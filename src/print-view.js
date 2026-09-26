@@ -3,7 +3,7 @@
 // again right before printing. Sheet text via textContent only (src/dom.js).
 
 import { el, setColor } from "./dom.js";
-import { countLabel, printLayout, schoolYearLabel, selectionTitle, softHyphenate, timeRange } from "./state.js";
+import { countLabel, printLayout, schoolYearLabel, selectionTitle, SOFT_HYPHEN, softHyphenate, timeRange } from "./state.js";
 
 export const PRINT_COPY = {
   school: "Hunyadi Mátyás Általános Iskola",
@@ -157,17 +157,31 @@ export function renderPrintPage(container, model, sel) {
 export function fitPrintPage(container) {
   if (!container.querySelector(".pp-card")) return;
   container.classList.add("pp-measuring");
+  const wraps = (word) => {
+    const style = getComputedStyle(word);
+    const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.3;
+    return word.offsetHeight > line * 1.5;
+  };
+  const textOf = (word) => (word.firstChild && word.firstChild.nodeType === Node.TEXT_NODE ? word.firstChild : null);
   try {
     for (const word of container.querySelectorAll(".pp-word")) {
-      const style = getComputedStyle(word);
-      const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.3;
-      const text = word.firstChild;
-      if (word.offsetHeight > line * 1.5 && text && text.nodeType === Node.TEXT_NODE) text.data = softHyphenate(text.data);
+      const text = textOf(word);
+      if (text && wraps(word)) text.data = softHyphenate(text.data);
     }
     for (const card of container.querySelectorAll(".pp-card")) {
       for (const step of ["pp-tight", "pp-tighter"]) {
         if (card.scrollHeight <= card.clientHeight) break;
         card.classList.add(step);
+      }
+      // A tighter card may fit a hyphenated word on one line after all: its
+      // unused soft hyphens would still split it in the PDF's text layer.
+      if (!card.matches(".pp-tight")) continue;
+      for (const word of card.querySelectorAll(".pp-word")) {
+        const text = textOf(word);
+        if (!text || !text.data.includes(SOFT_HYPHEN)) continue;
+        const hyphenated = text.data;
+        text.data = hyphenated.replaceAll(SOFT_HYPHEN, "");
+        if (wraps(word)) text.data = hyphenated;
       }
     }
   } finally {

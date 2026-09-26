@@ -71,14 +71,15 @@
    first row, with a thin bracket over the lanes; the cards that start in that
    row sit below the strip. */
 .pp-choice {
-  /* Half of the strip sits in the 6 px row gap above the group. */
-  align-self: start; height: var(--choice-strip); margin-top: -6px; display: flex; align-items: center; gap: 6px;
+  /* The strip reaches 3 px into the row gap above the group; the accents of
+     Á and Ó stay clear of the border or the day underline above it. */
+  align-self: start; height: var(--choice-strip); margin-top: -3px; display: flex; align-items: center; gap: 6px;
   font-size: 12px; line-height: 1; font-weight: 700; color: var(--accent-text);
 }
 .pp-choice::before, .pp-choice::after { content: ""; flex: 1 1 0; align-self: stretch; margin-top: 6px; border-top: 1px solid currentColor; }
 .pp-choice::before { border-left: 1px solid currentColor; border-top-left-radius: 4px; }
 .pp-choice::after { border-right: 1px solid currentColor; border-top-right-radius: 4px; }
-.pp-below-choice { margin-top: calc(var(--choice-strip) - 6px + 3px); }
+.pp-below-choice { margin-top: calc(var(--choice-strip) - 3px + 3px); }
 
 /* A split card is half a day column wide (~87 px): tighter padding and no
    time line (print-view.js). Each word is an inline block, so lines break
