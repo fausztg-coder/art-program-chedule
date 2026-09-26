@@ -133,7 +133,32 @@ Minden szélességen és böngészőben:
 
 ## J. PDF és nyomtatás (8.9, 8.10)
 
-A 3. mérföldkőben készül el; az ellenőrzőlista (A4 fekvő, egy oldal, szürkeárnyalatos nyomtatás, Ctrl+P, négy böngésző) akkor kerül ide. Addig a „PDF/nyomtatás” gomb aktív állapotban sem csinál semmit.
+Mind a négy böngészőben (asztali Chrome, asztali Safari, iOS Safari, Androidos Chrome) végig kell menni. Minta: `?o=3.b` (egyszerű hét), `?o=4.a` (átfedő, „Választható” órák, bizonytalan sor), `?o=5.a&f=keramia,enekkar,modern-tanc` (szűrt választás).
+
+**Indítás:**
+
+1. ☐ Válassz egy osztályt, és kattints a „PDF/nyomtatás” gombra: megnyílik a nyomtatási párbeszéd.
+2. ☐ A előnézetben egyetlen A4 fekvő oldal látszik; a képernyős felület (fejléc, választó, lista, gombok, sávok, Adathibák) nincs rajta.
+3. ☐ **Ctrl+P / Cmd+P** (vagy a böngésző menüjéből Nyomtatás): ugyanez a nyomtatási nézet jelenik meg, az aktuális választással. Válts osztályt, és nyomtass újra Ctrl+P-vel: az új osztály látszik.
+4. ☐ „Összes” osztálynál a gomb le van tiltva; Ctrl+P-re a lapon csak ez áll: „Válassz egy osztályt a nyomtatáshoz.”
+5. ☐ Mentés PDF-ként: a javasolt fájlnév / dokumentumcím „Művészeti órarend – {cím}” (pl. „Művészeti órarend – 4.a osztály · minden tanszak”). A PDF-olvasó Tulajdonságok/Dokumentum-infó ablakában is ez a cím.
+6. ☐ A párbeszéd bezárása után a böngészőfül címe visszaáll: „Hunyadi művészeti órarend”.
+7. ☐ **iPhone:** Megosztás → Nyomtatás → (két ujjal széthúzva az előnézetet) Megosztás → Mentés a Fájlokba. A mentett PDF megfelel a lenti pontoknak. Ha itt a fájlnév nem a cím, írd fel (a Safari nem mindig küld nyomtatás előtti eseményt).
+
+**A PDF-oldal (SPEC 6.4):**
+
+8. ☐ Levélfej: „Hunyadi Mátyás Általános Iskola · Művészeti képzés”, jobbra a tanév („2026/2027-es tanév”), alatta bordó vonal. Ha a Sheetben üres a Tanév, a tanév kimarad.
+9. ☐ Cím: „MŰVÉSZETI ÓRAREND”, alatta a képernyős eredménycím, jobbra a darabszám („{n} foglalkozás hetente”, ugyanannyi, mint a képernyőn).
+10. ☐ Rács: bal oldalt az órák („7. ÓRA”, kezdés, vége), felül Hétfő–Péntek; az Órák fül minden órájára egy egyforma magas sor, akkor is, ha az osztálynak abban az órában nincs foglalkozása (szaggatott üres cella).
+11. ☐ Az órakártyák a tanszak színével (halvány kitöltés, sötétebb keret), dupla óra két sort fog át. Szöveg: név, időpont, alul tanár és terem (ami a Sheetben hiányzik, az kimarad).
+12. ☐ Csak a kijelölt tanszakok kártyái vannak rajta; tanszak-„Összes”-nél az osztály minden foglalkozása.
+13. ☐ Átfedő órák (pl. 4.a kedd 8–9. és 9. óra): a kártyák a nap oszlopában **egymás mellett** állnak, mindegyik a saját óráin; mindegyiken „VÁLASZTHATÓ” jelölés. Semmilyen szöveg nincs levágva, és szó nem törik betű közben.
+14. ☐ Bizonytalan sor: a név után „?”, és a lábléc fölött: „? = az adat pontosítás alatt”. Bizonytalan sor nélkül ez a sor nincs ott.
+15. ☐ Lábléc: „Hunyadi Mátyás Általános Iskola · Művészeti képzés”.
+16. ☐ A PDF-ben a szöveg kijelölhető és kereshető (pl. keress rá: „Kerámia”).
+17. ☐ A tanszakszínek megmaradnak (a „Háttérgrafika” / „Background graphics” opció nélkül is).
+18. ☐ **Szürkeárnyalatos nyomtatás** (a párbeszédben Színes → Fekete-fehér, vagy valódi nyomtató): minden kártya olvasható, a tanszak nevéből azonosítható; a keretek és a szaggatott üres cellák látszanak.
+19. ☐ A böngésző saját fejléce/lábléce (URL, dátum) a párbeszédben kikapcsolható („Fejlécek és láblécek”); bekapcsolva sem tolja a tartalmat második oldalra.
 
 ## K. Ami nem lehet az oldalon (8.18)
 

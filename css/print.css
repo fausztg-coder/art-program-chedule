@@ -8,11 +8,13 @@ html, body { background: #fff; }
 body > :not(.print-page) { display: none !important; }
 
 .print-page, .print-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-/* The page box minus the @page margins (297 × 210 mm), a little short of it so
-   rounding never pushes the page onto a second sheet. */
+/* The full width of the page area, and the height of an A4 landscape page
+   area (210 mm minus the margins), a little short of it so rounding never
+   pushes the page onto a second sheet. A browser that ignores @page size
+   (another paper size or portrait) still gets one unclipped page. */
 .print-page {
   display: flex; flex-direction: column; gap: 14px;
-  width: 271.6mm; height: 186mm; overflow: hidden; break-inside: avoid;
+  width: 100%; height: 186mm; overflow: hidden; break-inside: avoid;
   background: #fff; color: var(--ink); font-family: var(--font-ui);
 }
 
