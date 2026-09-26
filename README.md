@@ -1,6 +1,6 @@
 # Hunyadi művészeti órarend
 
-A Hunyadi Mátyás Általános Iskola délutáni művészeti foglalkozásainak órarendje osztályonként. A szülő kiválasztja az osztályt (pl. 4.a), és látja a hétfő–péntek, 7–10. órás rácsot; egy foglalkozásra koppintva kiemeli azt. Az adatot az iskola egy Google Táblázatban szerkeszti; az oldal ezt olvassa, és ha nem éri el, a repóban tárolt utolsó jó pillanatképet (`data/snapshot.json`) mutatja.
+A Hunyadi Mátyás Általános Iskola délutáni művészeti foglalkozásainak heti órarendje. A szülő kiválaszt egy osztályt (vagy az „Összes”-t) és egy vagy több tanszakot, és napok szerint csoportosított listában látja az órákat; egy osztály listáját a böngésző nyomtatásával A4-es PDF-be mentheti. Az adatot az iskola egy Google Táblázatban szerkeszti; az oldal ezt olvassa, és ha nem éri el, a repóban tárolt utolsó jó pillanatképet (`data/snapshot.json`) mutatja.
 
 ## Táblázat bekötése
 

@@ -264,7 +264,7 @@ function readClasses(rows, issue) {
 function readActivities(rows, issue) {
   const activities = [];
   const byKey = new Map();
-  const ids = new Set(["all"]); // reserved in 1.0 for the "Mind" filter; kept so ids stay stable
+  const ids = new Set(["all"]); // reserved since 1.0; kept so existing URL keys stay stable (SPEC §3.5)
   let paletteIndex = 0;
   for (const row of rows) {
     const name = row["Foglalkozás"];
@@ -420,30 +420,6 @@ export function itemsForClass(model, cls) {
 // The lessons an item covers, in the order of the Órák tab.
 export function lessonsOf(model, item) {
   return model.periods.filter((p) => p.n >= item.first && p.n <= item.last).map((p) => p.n);
-}
-
-// One slot per lesson, as in the 1.0 model. Used by the 1.0 screen until it
-// is replaced in milestone 2.
-export function slotsOf(model) {
-  return model.items.flatMap((item) =>
-    lessonsOf(model, item).map((period) => ({
-      day: item.day,
-      period,
-      activityId: item.activityId,
-      activity: item.activity,
-      teacher: item.teacher,
-      room: item.room,
-      targets: item.targets,
-      uncertain: item.uncertain,
-      note: item.note,
-      sheetRow: item.sheetRow,
-    })),
-  );
-}
-
-// 1.0 query on model.slots (see slotsOf).
-export function slotsForClass(model, cls) {
-  return model.slots.filter((s) => reachesClass(s, cls));
 }
 
 // Published-CSV URL of one tab (SPEC §3).

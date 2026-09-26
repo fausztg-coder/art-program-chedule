@@ -49,7 +49,7 @@ test("pickMode", () => {
   assert.equal(pickMode(LIVE_CONFIG, ""), "live");
   assert.equal(pickMode({ ...LIVE_CONFIG, GIDS: { ...LIVE_CONFIG.GIDS, orak: "" } }, ""), "snapshot");
   assert.equal(pickMode(BASE_CONFIG, "?forras=minta"), "sample");
-  assert.equal(pickMode(LIVE_CONFIG, "?osztaly=4.a&forras=minta"), "sample");
+  assert.equal(pickMode(LIVE_CONFIG, "?o=4.a&forras=minta"), "sample");
   assert.equal(pickMode(LIVE_CONFIG, "?forras=other"), "live");
 });
 
@@ -69,9 +69,10 @@ test("sample mode runs the sample CSVs through the full pipeline", async () => {
   assert.equal(result.model.source, "sample");
   assert.equal(result.model.generatedAt, "2026-10-01T08:00:00Z");
   assert.equal(result.model.items.length, 28);
-  assert.deepEqual(calls.map((c) => c.url).sort(), TABS.map(sampleUrl).sort());
-  assert.ok(calls.every((c) => c.init.cache === "no-store" && c.init.signal));
-  assert.equal(new Set(calls.map((c) => c.init.signal)).size, TABS.length, "each tab has its own timeout (SPEC 1.1 §2.1)");
+  const csvCalls = calls.filter((c) => c.url !== "data/snapshot.json");
+  assert.deepEqual(csvCalls.map((c) => c.url).sort(), TABS.map(sampleUrl).sort());
+  assert.ok(csvCalls.every((c) => c.init.cache === "no-store" && c.init.signal));
+  assert.equal(new Set(csvCalls.map((c) => c.init.signal)).size, TABS.length, "each tab has its own timeout (SPEC 1.1 §2.1)");
 });
 
 test("live mode fetches the published Sheet URLs", async () => {
@@ -81,10 +82,10 @@ test("live mode fetches the published Sheet URLs", async () => {
   assert.equal(result.model.source, "sheet");
   assert.equal(result.model.items.length, 28);
   assert.deepEqual(
-    calls.map((c) => c.url).sort(),
+    calls.map((c) => c.url).filter((url) => url !== "data/snapshot.json").sort(),
     TABS.map((tab) => csvUrl(LIVE_CONFIG, tab)).sort(),
   );
-  assert.match(calls[0].url, /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-test\/pub\?gid=\d&single=true&output=csv$/);
+  assert.match(calls.find((c) => c.url.startsWith("https:")).url, /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-test\/pub\?gid=\d&single=true&output=csv$/);
 });
 
 async function assertFallback(overrides, reason) {
@@ -186,4 +187,41 @@ test("the other requests are aborted after the first failure", async () => {
   const result = await loadData(LIVE_CONFIG, { mode: "live", fetch });
   assert.match(result.fallbackReason, /Órák: HTTP 404/);
   assert.equal(aborted.length, TABS.length - 1);
+});
+
+test("the snapshot is requested alongside the CSVs, so a fallback needs no second wait", async () => {
+  let snapshotRequested = null;
+  let csvStarted = null;
+  const { fetch } = fakeFetch({
+    "data/snapshot.json": () => {
+      snapshotRequested = Date.now();
+      return new Response(JSON.stringify(SNAPSHOT), { status: 200 });
+    },
+    [csvUrl(LIVE_CONFIG, "orak")]: (init) => {
+      csvStarted = Date.now();
+      return hang(init);
+    },
+  });
+  const started = Date.now();
+  const result = await loadData(LIVE_CONFIG, { mode: "live", fetch });
+  assert.equal(result.origin, "snapshot");
+  assert.ok(snapshotRequested !== null && snapshotRequested - started < 100, "snapshot requested at once");
+  assert.ok(csvStarted !== null);
+  // One timeout (200 ms), not two in a row.
+  assert.ok(Date.now() - started < 380, `took ${Date.now() - started} ms`);
+});
+
+test("a failing snapshot does not disturb a successful live load", async () => {
+  const unhandled = [];
+  const onUnhandled = (reason) => unhandled.push(reason);
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    const { fetch } = fakeFetch({ "data/snapshot.json": () => new Response("", { status: 404 }) });
+    const result = await loadData(LIVE_CONFIG, { mode: "live", fetch });
+    assert.equal(result.origin, "live");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.deepEqual(unhandled, []);
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
 });

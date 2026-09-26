@@ -1,355 +1,155 @@
-// Rendering and event wiring for index.html.
+// Start-up, selection state and event wiring for index.html (SPEC 1.1 §4–§5).
 
 import config from "../config.js";
 import { loadData, pickMode } from "./load.js";
-import { slotsForClass, slotsOf, TAB_NAMES } from "./model.js";
-import { summaryText } from "./summary.js";
-import {
-  ALL,
-  activityCounts,
-  classesOfGrade,
-  gradesOf,
-  loadStored,
-  persist,
-  readQuery,
-  resolveSelection,
-  selectActivity,
-  selectClass,
-  selectGrade,
-} from "./state.js";
-
-// UI copy (SPEC §7).
-const COPY = {
-  all: "Mind",
-  count: (n) => `${n} óra`,
-  choice: "Választható",
-  uncertain: "Bizonytalan adat",
-  why: "Miért bizonytalan?",
-  note: "Megjegyzés",
-  dayEmpty: "Nincs foglalkozás.",
-  copy: "Szöveg másolása",
-  copied: "Kimásolva",
-  copyFallback: "Kijelölve, másold ki",
-  bannerSnapshot: (date) => `Az órarend most nem frissült. A ${date} állapotot látod.`,
-  issuesSummary: (n) => `Adathibák (${n})`,
-  issue: (tab, row, message) => `${tab} fül, ${row}. sor: ${message}`,
-  report: "Hibát jelezz: ",
-  footerLive: (time) => `Élő adat a Google Táblázatból, betöltve ${time}.`,
-  footerSample: "Mintaadat (fejlesztői mód).",
-  footerSnapshot: (when) => `Pillanatkép, ${when}.`,
-};
-
-const COPIED_MS = 1800;
-// Colours are validated by buildModel; checked again here because they go into
-// style attributes unescaped.
-const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-const EMAIL_RE = /^[^\s@<>":?&/]+@[^\s@<>":?&/]+\.[^\s@<>":?&/]+$/;
+import { renderPrintPage } from "./print-view.js";
+import { renderClassChips, renderDataStates, renderDisciplineChips, renderResults } from "./render.js";
+import { chooseClass, clearDisciplines, loadChoice, printTitle, resolveChoice, saveChoice, toggleDiscipline } from "./state.js";
 
 const $ = (id) => document.getElementById(id);
-const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESCAPES[c]);
-const pad = (n) => String(n).padStart(2, "0");
 
 let model = null;
 let sel = null;
-let activityIndex = new Map(); // activity id → display order
-let activityById = new Map();
-let slotIndex = new Map(); // slot object → index in model.slots (stable note ids)
-const openNotes = new Set(); // slot indexes whose note is expanded
-let copyTimer = 0;
+const openNotes = new Set(); // sheet rows whose note is shown
+const focusOpened = new Set(); // notes opened by keyboard focus, closed again on blur
 
-// ---------------------------------------------------------------------------
-// Data
-
-function setModel(data) {
-  // The 1.0 screen works on one slot per lesson; milestone 2 replaces it.
-  model = { ...data, slots: slotsOf(data) };
-  activityIndex = new Map(model.activities.map((a, i) => [a.id, i]));
-  activityById = new Map(model.activities.map((a) => [a.id, a]));
-  slotIndex = new Map(model.slots.map((s, i) => [s, i]));
+function resultElements() {
+  return {
+    title: $("resultTitle"),
+    count: $("resultCount"),
+    pdfButton: $("pdfButton"),
+    pdfNote: $("pdfNote"),
+    listHead: $("listHead"),
+    days: $("days"),
+    empty: $("empty"),
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Rendering
-
-const colorOf = (id) => {
-  const color = activityById.get(id)?.color;
-  return COLOR_RE.test(color) ? color : "var(--muted)";
-};
-
-// Date parts in the viewer's time zone: "YYYY. MM. DD." and "HH:MM".
-function formatDate(iso) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.`;
-}
-function formatTime(iso) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-// Header, banners, issues panel and footer: everything that does not depend
-// on the selection.
-function renderMeta({ origin, fallbackReason }) {
-  const settings = model.settings;
-  $("eyebrow").textContent = [settings.iskola, settings.tanev].filter(Boolean).join(" · ");
-
-  const snapshotBanner = $("bannerSnapshot");
-  const date = formatDate(model.generatedAt);
-  snapshotBanner.hidden = !(fallbackReason && date);
-  snapshotBanner.textContent = snapshotBanner.hidden ? "" : COPY.bannerSnapshot(date);
-  const notice = $("bannerNotice");
-  notice.textContent = settings.kozlemeny || "";
-  notice.hidden = !settings.kozlemeny;
-  $("banners").hidden = snapshotBanner.hidden && notice.hidden;
-
-  renderIssues();
-
-  let footer = COPY.footerSample;
-  if (origin === "live") footer = COPY.footerLive(formatTime(model.generatedAt));
-  else if (origin === "snapshot") footer = date ? COPY.footerSnapshot(`${date} ${formatTime(model.generatedAt)}`) : "";
-  $("foot").textContent = footer;
-}
-
-function renderIssues() {
-  const issues = model.issues;
-  $("issues").hidden = !issues.length;
-  if (!issues.length) return;
-  $("issuesSummary").textContent = COPY.issuesSummary(issues.length);
-  $("issuesList").innerHTML = issues
-    .map((i) => `<li>${esc(COPY.issue(TAB_NAMES[i.tab] || i.tab, i.row, i.message))}</li>`)
-    .join("");
-  const contact = (model.settings.hibabejelentes || "").trim();
-  const address = contact.replace(/^mailto:/i, "");
-  const report = $("issuesReport");
-  report.hidden = !contact;
-  report.innerHTML = !contact
-    ? ""
-    : esc(COPY.report) + (EMAIL_RE.test(address) ? `<a href="mailto:${esc(address)}">${esc(contact)}</a>` : esc(contact));
-}
-
-function renderControls() {
-  const grade = sel.cls.split(".")[0];
-  $("grades").innerHTML = gradesOf(model)
-    .map((g) => `<button type="button" class="seg" aria-pressed="${g === grade}" data-grade="${esc(g)}">${esc(g)}.</button>`)
-    .join("");
-  $("classes").innerHTML = classesOfGrade(model, grade)
-    .map((c) => `<button type="button" class="seg" aria-pressed="${c === sel.cls}" data-cls="${esc(c)}">${esc(c)}</button>`)
-    .join("");
-  const total = slotsForClass(model, sel.cls).length;
-  $("activities").innerHTML =
-    chip(ALL, COPY.all, "var(--ink)", total) +
-    activityCounts(model, sel.cls)
-      .map(({ activity, count }) => chip(activity.id, activity.name, colorOf(activity.id), count))
-      .join("");
-}
-
-function chip(id, name, color, count) {
-  return (
-    `<button type="button" class="chip" aria-pressed="${sel.act === id}" data-activity="${esc(id)}">` +
-    `<span class="dot" style="--c:${color}" aria-hidden="true"></span><span class="name">${esc(name)}</span> <span class="n">${COPY.count(count)}</span></button>`
-  );
-}
-
-// Slots of the selected class per "day|period", ordered by activity, then teacher.
-function cellsForClass() {
-  const cells = new Map();
-  const mine = slotsForClass(model, sel.cls).sort(
-    (a, b) =>
-      activityIndex.get(a.activityId) - activityIndex.get(b.activityId) ||
-      a.teacher.localeCompare(b.teacher, "hu") ||
-      a.room.localeCompare(b.room, "hu") ||
-      a.sheetRow - b.sheetRow,
-  );
-  for (const s of mine) {
-    const key = `${s.day}|${s.period}`;
-    if (!cells.has(key)) cells.set(key, []);
-    cells.get(key).push(s);
-  }
-  return cells;
-}
-
-// view: "g" (grid) or "d" (day list); keeps note ids unique across both.
-function card(s, view) {
-  const i = slotIndex.get(s);
-  const dim = sel.act !== ALL && sel.act !== s.activityId;
-  const meta = [s.teacher, s.room].filter(Boolean).join(" · ");
-  const qmark = s.uncertain ? `<span class="qmark" role="img" aria-label="${COPY.uncertain}" title="${COPY.uncertain}">?</span>` : "";
-  const nameId = `${view}-name-${i}`;
-  let note = "";
-  if (s.note) {
-    const open = openNotes.has(i);
-    const id = `${view}-note-${i}`;
-    // aria-describedby tells the identical toggle labels apart.
-    note =
-      `<button type="button" class="c-note-btn" aria-expanded="${open}" aria-controls="${id}" aria-describedby="${nameId}" data-note="${i}">${s.uncertain ? COPY.why : COPY.note}</button>` +
-      `<p class="c-note" id="${id}"${open ? "" : " hidden"}>${esc(s.note)}</p>`;
-  }
-  return (
-    `<div class="card${s.uncertain ? " unc" : ""}${dim ? " dim" : ""}" style="--c:${colorOf(s.activityId)}">` +
-    `<div class="c-name"><span id="${nameId}">${esc(s.activity)}</span>${qmark}</div>` +
-    (meta ? `<div class="c-meta">${esc(meta)}</div>` : "") +
-    `${note}</div>`
-  );
-}
-
-function cellHTML(list, view) {
-  if (!list || !list.length) return "";
-  const badge = list.length > 1 ? `<span class="badge">${COPY.choice}</span>` : "";
-  return `<div class="cell">${badge}${list.map((s) => card(s, view)).join("")}</div>`;
-}
-
-const periodLabel = (p) => `${esc(p.n)}. óra<span class="ptime">${esc(p.from)}–${esc(p.to)}</span>`;
-
-function renderSchedule() {
-  const cells = cellsForClass();
-  const at = (day, p) => cells.get(`${day.key}|${p.n}`);
-
-  let html = `<thead><tr><th scope="col"><span class="ptime">óra</span></th>`;
-  html += model.days.map((d) => `<th scope="col">${esc(d.name)}</th>`).join("");
-  html += `</tr></thead><tbody>`;
-  for (const p of model.periods) {
-    html += `<tr><th scope="row">${periodLabel(p)}</th>`;
-    html += model.days.map((d) => `<td>${cellHTML(at(d, p), "g")}</td>`).join("");
-    html += `</tr>`;
-  }
-  $("week").innerHTML = `${html}</tbody>`;
-
-  $("daylist").innerHTML = model.days
-    .map((d) => {
-      const rows = model.periods.filter((p) => at(d, p));
-      const body = rows.length
-        ? rows.map((p) => `<div class="slot"><div class="when">${periodLabel(p)}</div>${cellHTML(at(d, p), "d")}</div>`).join("")
-        : `<div class="empty">${COPY.dayEmpty}</div>`;
-      return `<div class="day"><h2>${esc(d.name)}</h2>${body}</div>`;
-    })
-    .join("");
-}
-
-function renderSummary() {
-  $("sumText").textContent = summaryText(model, sel.cls, sel.act);
-  resetCopyButton();
-}
-
-// Re-rendering replaces the control buttons, so keep keyboard focus on the
-// equivalent new button.
+// Chips are rebuilt on every change, so keyboard focus moves to the new chip
+// with the same action and value.
 function focusedControl() {
-  const el = document.activeElement;
-  if (!el || !el.dataset) return null;
-  for (const key of ["grade", "cls", "activity"]) {
-    if (el.dataset[key] !== undefined) return `[data-${key}="${CSS.escape(el.dataset[key])}"]`;
-  }
-  return null;
+  const node = document.activeElement;
+  if (!node || !node.dataset || !node.dataset.action || node.dataset.action === "note") return null;
+  return `[data-action="${node.dataset.action}"][data-value="${CSS.escape(node.dataset.value || "")}"]`;
 }
 
 function render() {
   const focus = focusedControl();
-  renderControls();
-  renderSchedule();
-  renderSummary();
-  persist(sel);
+  renderClassChips($("classChips"), model, sel);
+  renderDisciplineChips($("disciplineChips"), model, sel);
+  renderResults(resultElements(), model, sel, openNotes);
+  renderPrintPage($("printPage"), model, sel);
+  saveChoice(sel);
   if (focus) document.querySelector(focus)?.focus();
 }
 
-// ---------------------------------------------------------------------------
-// Interaction
-
 function update(next) {
-  if (next.cls === sel.cls && next.act === sel.act) return;
+  const same = next.cls === sel.cls && next.disciplines.join() === sel.disciplines.join();
+  if (same) return;
   sel = next;
   render();
 }
 
-function toggleNote(i) {
-  const open = !openNotes.has(i);
-  if (open) openNotes.add(i);
-  else openNotes.delete(i);
-  for (const btn of document.querySelectorAll(`[data-note="${i}"]`)) btn.setAttribute("aria-expanded", String(open));
-  for (const view of ["g", "d"]) {
-    const note = $(`${view}-note-${i}`);
-    if (note) note.hidden = !open;
+// "?" of an uncertain row (§4.6): the note is shown or hidden in place.
+function setNote(key, open) {
+  if (open) openNotes.add(key);
+  else openNotes.delete(key);
+  const button = document.querySelector(`button[data-action="note"][data-value="${CSS.escape(key)}"]`);
+  const note = document.getElementById(`note-${key}`);
+  if (button) button.setAttribute("aria-expanded", String(open));
+  if (note) note.hidden = !open;
+}
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button || !model) return;
+  const { action, value } = button.dataset;
+  if (action === "class") update(chooseClass(model, sel, value || null));
+  else if (action === "discipline") update(toggleDiscipline(model, sel, value));
+  else if (action === "disciplines-all") update(clearDisciplines(sel));
+  else if (action === "note") {
+    // A note opened by focus stays open (pinned); otherwise the click toggles it.
+    if (focusOpened.delete(value)) return;
+    setNote(value, !openNotes.has(value));
   }
-}
-
-function setCopyLabel(text, ok) {
-  const btn = $("copy");
-  btn.textContent = text;
-  btn.classList.toggle("ok", ok);
-}
-
-function resetCopyButton() {
-  clearTimeout(copyTimer);
-  setCopyLabel(COPY.copy, false);
-  $("copyStatus").textContent = "";
-}
-
-function copySummary() {
-  const pre = $("sumText");
-  const done = () => {
-    clearTimeout(copyTimer);
-    setCopyLabel(COPY.copied, true);
-    $("copyStatus").textContent = COPY.copied;
-    copyTimer = setTimeout(resetCopyButton, COPIED_MS);
-  };
-  const fallback = () => {
-    clearTimeout(copyTimer);
-    const range = document.createRange();
-    range.selectNodeContents(pre);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    setCopyLabel(COPY.copyFallback, false);
-    $("copyStatus").textContent = COPY.copyFallback;
-  };
-  try {
-    navigator.clipboard.writeText(pre.textContent).then(done, fallback);
-  } catch {
-    fallback();
+  else if (action === "print") {
+    beforePrint();
+    window.print();
   }
-}
-
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("button");
-  if (!btn || !model) return;
-  const d = btn.dataset;
-  if (d.grade !== undefined) update(selectGrade(model, sel, d.grade));
-  else if (d.cls !== undefined) update(selectClass(model, sel, d.cls));
-  else if (d.activity !== undefined) update(selectActivity(model, sel, d.activity));
-  else if (d.note !== undefined) toggleNote(Number(d.note));
-  else if (btn.id === "copy") copySummary();
 });
 
-// ---------------------------------------------------------------------------
-// Start
+// Printing (SPEC §6.2): the print page is rebuilt from the current selection,
+// and the document title (the PDF's title and file name) becomes the result
+// title until printing ends. Ctrl+P and the browser menu go through
+// beforeprint too; matchMedia covers browsers that do not fire it.
+let screenTitle = null;
 
-// The grid scrolls sideways between 641 and 760 px. Make it focusable only
-// then, so keyboard users can scroll it without an extra tab stop otherwise.
-function watchGridScroll() {
-  const region = $("gridScroll");
-  const update = () => {
-    if (region.scrollWidth > region.clientWidth) region.tabIndex = 0;
-    else region.removeAttribute("tabindex");
-  };
-  if ("ResizeObserver" in window) new ResizeObserver(update).observe(region);
-  update();
+function beforePrint() {
+  if (!model) return;
+  renderPrintPage($("printPage"), model, sel);
+  if (screenTitle === null) screenTitle = document.title;
+  document.title = sel.cls ? printTitle(model, sel) : screenTitle;
 }
+
+function afterPrint() {
+  if (screenTitle === null) return;
+  document.title = screenTitle;
+  screenTitle = null;
+}
+
+// The print page is measured to fit (print-view.js); once the web fonts are
+// in, measure again with them.
+document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, sel));
+
+window.addEventListener("beforeprint", beforePrint);
+window.addEventListener("afterprint", afterPrint);
+window.matchMedia?.("print").addEventListener?.("change", (event) => (event.matches ? beforePrint() : afterPrint()));
+
+// Keyboard focus shows the note too (§4.6); a tap does not count as keyboard
+// focus (:focus-visible), so the tap's click alone toggles it.
+document.addEventListener("focusin", (event) => {
+  const button = event.target.closest?.('button[data-action="note"]');
+  if (!button || !button.matches(":focus-visible")) return;
+  const key = button.dataset.value;
+  if (openNotes.has(key)) return;
+  focusOpened.add(key);
+  setNote(key, true);
+});
+
+document.addEventListener("focusout", (event) => {
+  const button = event.target.closest?.('button[data-action="note"]');
+  if (!button) return;
+  const key = button.dataset.value;
+  if (focusOpened.delete(key)) setNote(key, false);
+});
 
 async function start() {
   const main = document.querySelector("main");
   try {
     const result = await loadData(config, { mode: pickMode(config, location.search) });
     if (result.fallbackReason) console.warn(`Showing the snapshot: ${result.fallbackReason}`);
-    setModel(result.model);
-    sel = resolveSelection(model, { query: readQuery(location.search), stored: loadStored() });
-    renderMeta(result);
+    model = result.model;
+    sel = resolveChoice(model, { search: location.search, stored: loadChoice() });
+    renderDataStates(
+      {
+        banners: $("banners"),
+        bannerSnapshot: $("bannerSnapshot"),
+        bannerNotice: $("bannerNotice"),
+        issues: $("issues"),
+        issuesSummary: $("issuesSummary"),
+        issuesList: $("issuesList"),
+        issuesReport: $("issuesReport"),
+      },
+      model,
+      result,
+    );
     render();
     $("content").hidden = false;
-    watchGridScroll();
   } catch (err) {
     // Also covers a snapshot that loads but cannot be rendered.
     console.error(`Timetable could not be loaded: ${err.message}`);
     model = null;
     $("content").hidden = true;
-    $("foot").textContent = "";
     $("fatal").hidden = false;
   } finally {
     $("loading").hidden = true;

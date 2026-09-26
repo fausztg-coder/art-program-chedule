@@ -1,0 +1,181 @@
+/* Screen layout and components (SPEC 1.1 §4), after docs/design/*.dc.html.
+   Desktop and tablet (≥ 768 px) share one layout; below 768 px is mobile. */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg-page); color: var(--ink); font-family: var(--font-ui); font-size: 15px; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brand-burgundy); outline-offset: 2px; }
+a { color: var(--brand-burgundy); }
+.wrap { width: var(--content-width); margin-inline: auto; }
+.print-page { display: none; } /* shown by css/print.css only */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* 1. Header (§4.5.1); the circles are decoration, clipped by the header */
+.site-header { position: relative; overflow: hidden; background: var(--brand-burgundy); }
+.decor { position: absolute; border-radius: 50%; pointer-events: none; }
+.decor-disc { width: 420px; height: 420px; right: -40px; top: -190px; background: var(--brand-gold); }
+.decor-ring { width: 260px; height: 260px; right: 300px; top: 60px; border: 1.5px solid var(--decor-ring); }
+/* Owner decision (2026-09-26): no header text on the gold disc (1.95:1).
+   The SPEC §4.4 positions stay where they are clear of the text (measured
+   with the real fonts, at least 6 px): from 890 px on the tablet and from
+   448 px on mobile. Narrower screens move the disc right and up (the mobile
+   steps are after the mobile block below). The tablet leaves out the ring. */
+@media (min-width: 768px) and (max-width: 1023.98px) { .decor-ring { display: none; } }
+@media (min-width: 768px) and (max-width: 889.98px) { .decor-disc { right: -165px; } }
+.header-inner { position: relative; padding: var(--header-pad-top) 0 var(--header-pad-bottom); display: flex; flex-direction: column; gap: var(--header-gap); }
+.school { display: flex; flex-direction: column; gap: var(--school-gap); }
+.school-name { font-family: var(--font-display); font-weight: 600; font-size: var(--school-size); line-height: var(--school-line); color: var(--on-brand); }
+.school-kicker { font-size: var(--kicker-size); font-weight: 700; letter-spacing: var(--kicker-spacing); color: var(--on-brand-accent); }
+.site-header h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--h1-size); line-height: var(--h1-line); letter-spacing: -0.015em; color: var(--on-brand); }
+
+/* Page column */
+.page { padding: var(--main-pad-top) 0 var(--main-pad-bottom); display: flex; flex-direction: column; gap: var(--stack-gap); }
+.content { display: flex; flex-direction: column; gap: var(--stack-gap); }
+.loading { padding: 48px 0; text-align: center; font-size: 16px; color: var(--ink-muted); }
+
+/* Data states (§4.7). The transparent border shows as an outline in forced-colors mode. */
+.banners { display: flex; flex-direction: column; gap: 8px; }
+.banner, .fatal { padding: 12px 16px; border: 1px solid transparent; border-radius: 12px; font-size: 15px; line-height: 1.4; white-space: pre-line; overflow-wrap: anywhere; }
+.banner-fallback, .fatal { background: var(--banner-fill); border-color: var(--accent-text); color: var(--accent-text); }
+.banner-notice { background: var(--surface); border-color: var(--border); color: var(--ink); }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--card-radius); }
+
+/* 2–3. Selector card (§4.5.2–3). Legends are floated so that they can sit in
+   the 96 px label column; a floated legend is laid out like any float. */
+.selector { padding: var(--selector-pad); display: flex; flex-direction: column; gap: var(--selector-gap); }
+.selector-divider { height: 1px; background: var(--divider); }
+.choice { min-width: 0; margin: 0; padding: 0; border: 0; }
+.choice-label { float: left; clear: left; width: 96px; margin-right: 20px; padding: 12px 0 0; font-size: var(--label-size); font-weight: 700; color: var(--ink-label); }
+.choice-label.has-help { padding-top: 4px; }
+.choice-help { float: left; clear: left; width: 96px; margin: 2px 20px 0 0; font-size: 13px; line-height: 1.3; color: var(--ink-muted); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--chip-gap); }
+.grade-row { display: contents; }
+.grade-label { display: none; }
+
+.chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; max-width: 100%; min-height: 44px; min-width: var(--chip-min); padding: 0 var(--chip-pad); border: 1.5px solid var(--border-control); border-radius: 999px; background: var(--surface); color: var(--ink); font: 700 15px var(--font-ui); text-align: left; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--brand-burgundy); border-color: var(--brand-burgundy); color: var(--on-brand); }
+.chip-discipline { min-width: 0; padding: 0 var(--chip-pad-discipline); }
+.chip-label { min-width: 0; overflow-wrap: anywhere; }
+.chip .check { width: 14px; height: 14px; flex: none; }
+.chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot); flex: none; }
+.chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px var(--on-brand); }
+
+/* 4. Result header (§4.5.4) and the PDF button (§6.1) */
+.results { overflow: hidden; }
+.results-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px 16px 28px; border-bottom: 1px solid var(--border); }
+.results-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
+.results-summary h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--h2-size); color: var(--brand-burgundy); }
+.results-count { font-size: var(--count-size); color: var(--ink-muted); }
+.pdf { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.pdf-note { font-size: 13px; color: var(--ink-muted); }
+.pdf-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--pdf-height); padding: 0 18px; border: 1px solid transparent; border-radius: 12px; /* the border shows in forced colors */ background: var(--brand-burgundy); color: var(--on-brand); font: 700 15px var(--font-ui); cursor: pointer; }
+.pdf-button:disabled { background: var(--disabled-fill); color: var(--ink-muted); cursor: not-allowed; }
+.pdf-button svg { width: 18px; height: 18px; flex: none; }
+
+/* 5. Result list (§4.5.5). One DOM for both layouts: a row of the desktop
+   table, or a card on mobile. */
+.list-head, .item { display: grid; grid-template-columns: var(--list-columns); gap: 16px; }
+.list-head { padding: 12px 28px; background: var(--bg-page); border-bottom: 1px solid var(--divider); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-text); }
+.day-title { padding: 14px 28px 6px; font-family: var(--font-display); font-weight: 600; font-size: var(--day-size); color: var(--ink); }
+.day-items { margin: 0; padding: 0; list-style: none; }
+/* Optional parts (the note, the mobile meta row) sit in implicit rows, so a
+   hidden or missing part adds no row gap. */
+.item { grid-template-areas: "time discipline teacher room class"; align-items: center; padding: 12px 28px; border-bottom: 1px solid var(--divider-row); }
+/* Desktop only: the last row needs no divider (mobile cards keep their border). */
+@media not all and (max-width: 767.98px) { .day:last-child .item:not(.uncertain):last-child { border-bottom: 0; } }
+.item-time { grid-area: time; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 6px; }
+.time { font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.lessons { font-size: 13px; color: var(--ink-muted); }
+.item-discipline { grid-area: discipline; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 14px; border-radius: 999px; background: var(--tint); font-size: 15px; font-weight: 600; color: var(--ink); }
+.pill .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dot); flex: none; }
+.pill-name { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.choice-pill { padding: 2px 8px; border: 1px solid var(--border-control); border-radius: 999px; background: var(--bg-page); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); }
+.item-meta { display: contents; }
+.meta { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: var(--meta-size); color: var(--ink); overflow-wrap: anywhere; hyphens: auto; }
+.meta svg { width: 16px; height: 16px; flex: none; color: var(--ink-muted); }
+.meta-teacher { grid-area: teacher; }
+.meta-room { grid-area: room; }
+.item-class { grid-area: class; font-size: 15px; font-weight: 700; color: var(--ink-label); }
+.target { white-space: nowrap; }
+
+/* Uncertain rows (§4.6): dashed frame, "?" after the name, the note on demand.
+   The desktop frame keeps the row's text where the other rows have it. */
+.item.uncertain { margin: 4px 16px; padding: 6.5px 10.5px; border: 1.5px dashed var(--accent-text); border-radius: 12px; }
+.uncertain-btn, .uncertain-mark { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; flex: none; border: 1.5px solid var(--accent-text); border-radius: 50%; background: var(--surface); color: var(--accent-text); font: 700 13px var(--font-ui); }
+.uncertain-btn { padding: 0; cursor: pointer; }
+.uncertain-btn::before { content: ""; position: absolute; inset: -12.5px; } /* 44 px target: 11 px beyond the 1.5 px border */
+.uncertain-btn[aria-expanded="true"] { background: var(--accent-text); color: var(--surface); }
+.item-note { grid-column: 1 / -1; padding: 8px 12px; border-radius: 8px; background: var(--bg-page); font-size: 14px; line-height: 1.4; color: var(--ink); white-space: pre-line; overflow-wrap: anywhere; }
+
+/* 7. Empty state (§4.5.7) */
+.empty { padding: 48px 28px; text-align: center; font-size: 16px; color: var(--ink-muted); }
+
+/* Adathibák (§4.7), for editors */
+.issues { padding: 0 28px; }
+.issues summary { padding: 12px 0; font-size: 15px; font-weight: 700; color: var(--ink-label); cursor: pointer; }
+.issues ul { margin: 0 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.issues .report { margin: 0 0 16px; font-size: 14px; overflow-wrap: anywhere; }
+
+/* Hover (not designed; SPEC §13 default), only for devices that hover */
+@media (hover: hover) and (forced-colors: none) {
+  .chip[aria-pressed="false"]:hover { background: var(--bg-page); }
+  .chip[aria-pressed="true"]:hover, .pdf-button:not(:disabled):hover { background: var(--brand-burgundy-hover); border-color: var(--brand-burgundy-hover); }
+  a:hover { color: var(--brand-burgundy-hover); }
+}
+
+/* Mobile (< 768 px) */
+@media (max-width: 767.98px) {
+  .decor-disc { width: 220px; height: 220px; right: -90px; top: -120px; }
+  .decor-ring { display: none; }
+
+  .choice-label, .choice-label.has-help { width: auto; margin-right: 8px; padding: 0; }
+  .choice-help { clear: none; width: auto; margin: 1px 0 0; }
+  .chips { clear: both; padding-top: 14px; }
+
+  /* Class chips grouped by grade, "Összes" on top (§4.5.2) */
+  .class-chips { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .grade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .grade-label { display: block; width: 24px; font-size: 14px; font-weight: 700; color: var(--ink-label); }
+
+  .results { overflow: visible; display: flex; flex-direction: column; gap: 10px; background: none; border: 0; border-radius: 0; }
+  .results-head { flex-direction: column; align-items: stretch; gap: 10px; padding: 0; border: 0; }
+  .results-summary { flex-direction: column; align-items: flex-start; gap: 2px; padding: 4px 2px; }
+  .pdf { margin-left: 0; flex-direction: column; align-items: stretch; gap: 6px; }
+  .pdf-note { order: 2; text-align: center; }
+
+  .list-head { display: none; }
+  .days { display: flex; flex-direction: column; gap: 14px; }
+  .day { display: flex; flex-direction: column; gap: 8px; }
+  .day-title { padding: 0 2px; }
+  .day-items { display: flex; flex-direction: column; gap: 8px; }
+  /* The time keeps its width; the class cell wraps between its parts instead. */
+  .item, .item.uncertain { grid-template-columns: minmax(min-content, 1fr) auto; grid-template-areas: "time class" "discipline discipline"; gap: 8px 10px; margin: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+  .item.uncertain { padding: 11.5px 13.5px; border: 1.5px dashed var(--accent-text); }
+  .item-class { justify-self: end; text-align: right; font-size: 14px; }
+  .item-discipline { justify-self: start; }
+  .pill { padding: 5px 12px; }
+  .item-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-secondary); }
+  .meta { gap: 6px; color: var(--ink-secondary); }
+  .meta svg { width: 14px; height: 14px; color: inherit; }
+
+  .empty { padding: 32px 16px; background: var(--surface); border: 1px dashed var(--border-control); border-radius: 14px; font-size: 15px; }
+  .issues { padding: 0 16px; }
+}
+
+/* Narrow phones: the disc steps right and up, clear of the school name and
+   the H1 (see the header rules above). */
+@media (max-width: 447.98px) { .decor-disc { right: -60px; top: -160px; } }
+@media (max-width: 399.98px) { .decor-disc { right: -100px; top: -160px; } }
+@media (max-width: 359.98px) { .decor-disc { right: -145px; top: -150px; } }
+
+/* Windows high contrast: keep the selected state visible */
+@media (forced-colors: active) {
+  .chip[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
+  .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px HighlightText; }
+  .chip[aria-pressed="true"]:focus-visible { outline-color: CanvasText; }
+}

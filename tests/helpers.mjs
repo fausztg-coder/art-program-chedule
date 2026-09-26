@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseCSV } from "../src/csv.js";
-import { buildModel, slotsOf, TABS } from "../src/model.js";
+import { buildModel, TABS } from "../src/model.js";
 
 const readSample = (tab) => readFileSync(new URL(`../data/sample/${tab}.csv`, import.meta.url), "utf8");
 
@@ -15,9 +15,6 @@ export function buildOk(tables) {
   assert.equal(result.ok, true, `expected ok, got fatal: ${result.fatal}`);
   return result.model;
 }
-
-// The model plus the derived 1.0 slots, for tests of the 1.0 screen's helpers.
-export const withSlots = (model) => ({ ...model, slots: slotsOf(model) });
 
 export const HEADER = ["Nap", "Első óra", "Utolsó óra", "Foglalkozás", "Tanár", "Terem", "Célcsoport", "Bizonytalan", "Megjegyzés", "Megjelenik"];
 const BASE_ROW = {
