@@ -31,10 +31,18 @@ function sampleCopy(file, transform) {
 
 test("--from-dir data/sample --check exits 0 and writes nothing", () => {
   const before = readFileSync(SNAPSHOT, "utf8");
-  const result = run("--from-dir", "data/sample", "--check");
+  // Compare against no snapshot: once the committed snapshot comes from the
+  // live Sheet, its slot count must not make the sanity guard trip here.
+  const result = run("--from-dir", "data/sample", "--check", "--out", path.join(tempDir(), "none.json"));
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^slots=43 activities=12 classes=16 issues=0 changed=(yes|no)\n$/);
+  assert.match(result.stdout, /^slots=43 activities=12 classes=16 issues=0 changed=yes\n$/);
   assert.equal(readFileSync(SNAPSHOT, "utf8"), before);
+});
+
+test("the committed snapshot is valid for the page", () => {
+  const model = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
+  assert.equal(model.version, 1);
+  assert.ok(model.classes.length > 0 && model.periods.length > 0 && Array.isArray(model.slots) && Array.isArray(model.issues));
 });
 
 test("a broken header exits 1 without writing", () => {

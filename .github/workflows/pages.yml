@@ -1,0 +1,83 @@
+# Tests, the nightly snapshot and the GitHub Pages deploy (SPEC §9).
+# One workflow on purpose: a commit pushed with GITHUB_TOKEN does not trigger
+# other workflows, so a separate snapshot workflow could never redeploy.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+  # Tests only; the deploy job is skipped for pull requests.
+  pull_request:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  snapshot:
+    # snapshot.mjs prints "skipped=not-configured" and exits 0 while config.js
+    # has no PUB_ID, so this job is a no-op until the Sheet is connected. It
+    # exits 1 without writing on invalid data, so nothing bad is committed.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/snapshot.mjs
+      - name: Commit the snapshot if it changed
+        run: |
+          if git diff --quiet -- data/snapshot.json; then
+            echo "Snapshot unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot.json
+          git commit -m "chore(data): snapshot"
+          git push
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test
+
+  deploy:
+    needs: [snapshot, test]
+    # always(): deploy even when the snapshot job was skipped (push) or failed
+    # (invalid Sheet), as long as the tests pass.
+    if: always() && needs.test.result == 'success' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # A fresh checkout of main, so a snapshot committed above is included.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Stage the site
+        # Only what the page needs: no tests, scripts, sample or template data,
+        # reference files, workflow or Markdown files.
+        run: |
+          mkdir -p _site/data
+          cp -r index.html style.css config.js src _site/
+          cp data/snapshot.json _site/data/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
