@@ -5,7 +5,7 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg-page); color: var(--ink); font-family: var(--font-ui); font-size: 15px; }
-h1, h2, h3, p { margin: 0; }
+h1, h2, h3, h4, p { margin: 0; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--brand-burgundy); outline-offset: 2px; }
 a { color: var(--brand-burgundy); }
@@ -64,11 +64,29 @@ a { color: var(--brand-burgundy); }
 .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot); flex: none; }
 .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px var(--on-brand); }
 
+/* Gyerek row (SPEC 1.2 §14.2): child chips, then the two buttons, in one
+   wrapping row; the name field below, in the chip column. */
+.child-line { align-items: center; }
+.child-chips, .child-actions { display: contents; }
+.secondary-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--border-control); border-radius: 12px; background: var(--surface); color: var(--ink); font: 700 15px var(--font-ui); cursor: pointer; }
+.secondary-button:disabled { background: var(--disabled-fill); color: var(--ink-muted); cursor: not-allowed; }
+.child-note { font-size: 13px; color: var(--ink-muted); }
+.child-name { clear: left; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px 0 0 116px; }
+.child-name-label { font-size: 14px; font-weight: 700; color: var(--ink-label); }
+.child-name-help { font-size: 13px; line-height: 1.3; color: var(--ink-muted); }
+.child-name input { width: min(100%, 280px); min-height: 44px; margin-top: 2px; padding: 0 12px; border: 1.5px solid var(--border-control); border-radius: 12px; background: var(--surface); color: var(--ink); font: 400 16px var(--font-ui); }
+
+/* 2–4 children (SPEC 1.2 §14.3): heading with the shared PDF button, then one
+   result card per child. */
+.family, .family-cards { display: flex; flex-direction: column; gap: var(--stack-gap); }
+.family-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.family-head h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--h2-size); color: var(--brand-burgundy); }
+
 /* 4. Result header (§4.5.4) and the PDF button (§6.1) */
 .results { overflow: hidden; }
 .results-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px 16px 28px; border-bottom: 1px solid var(--border); }
 .results-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
-.results-summary h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--h2-size); color: var(--brand-burgundy); }
+.results-summary h2, .results-summary h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--h2-size); color: var(--brand-burgundy); }
 .results-count { font-size: var(--count-size); color: var(--ink-muted); }
 .pdf { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .pdf-note { font-size: 13px; color: var(--ink-muted); }
@@ -123,7 +141,7 @@ a { color: var(--brand-burgundy); }
 
 /* Hover (not designed; SPEC §13 default), only for devices that hover */
 @media (hover: hover) and (forced-colors: none) {
-  .chip[aria-pressed="false"]:hover { background: var(--bg-page); }
+  .chip[aria-pressed="false"]:hover, .secondary-button:not(:disabled):hover { background: var(--bg-page); }
   .chip[aria-pressed="true"]:hover, .pdf-button:not(:disabled):hover { background: var(--brand-burgundy-hover); border-color: var(--brand-burgundy-hover); }
   a:hover { color: var(--brand-burgundy-hover); }
 }
@@ -141,6 +159,13 @@ a { color: var(--brand-burgundy); }
   .class-chips { flex-direction: column; align-items: flex-start; gap: 6px; }
   .grade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .grade-label { display: block; width: 24px; font-size: 14px; font-weight: 700; color: var(--ink-label); }
+
+  /* Gyerek row: the buttons (and the 4-children note) go below the chips. */
+  .child-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; }
+  .child-note { flex-basis: 100%; }
+  .child-name { padding: 14px 0 0; }
+  .family-head { flex-direction: column; align-items: stretch; gap: 10px; }
+  .family-head h2 { padding: 4px 2px 0; }
 
   .results { overflow: visible; display: flex; flex-direction: column; gap: 10px; background: none; border: 0; border-radius: 0; }
   .results-head { flex-direction: column; align-items: stretch; gap: 10px; padding: 0; border: 0; }

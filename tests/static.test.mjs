@@ -98,6 +98,12 @@ test("index.html carries the exact SPEC copy", () => {
     "PDF/nyomtatás",
     "PDF/nyomtatás csak egy osztály kiválasztásakor érhető el.",
     "Erre a választásra nincs foglalkozás.",
+    // SPEC 1.2 §14.2, §14.4
+    "+ Gyerek hozzáadása",
+    "Gyerek törlése",
+    "Legfeljebb 4 gyerek adható meg.",
+    "nem kötelező · csak ezen az eszközön tárolódik",
+    "PDF/nyomtatás csak akkor érhető el, ha minden gyereknél ki van választva egy osztály.",
   ];
   for (const text of specCopy) {
     assert.ok(SPEC.includes(text), `not in SPEC.md: ${text}`);

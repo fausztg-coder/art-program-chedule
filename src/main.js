@@ -1,16 +1,37 @@
-// Start-up, selection state and event wiring for index.html (SPEC 1.1 §4–§5).
+// Start-up, selection state and event wiring for index.html (SPEC 1.1 §4–§5,
+// SPEC 1.2 §14: several children; the selectors edit the active child).
 
 import config from "../config.js";
+import {
+  activeChild,
+  addChild,
+  canPrintFamily,
+  familyPrintTitle,
+  loadFamily,
+  removeChild,
+  resolveFamily,
+  saveFamily,
+  setActiveChild,
+  setChildName,
+  updateActiveChild,
+} from "./children.js";
 import { loadData, pickMode } from "./load.js";
 import { renderPrintPage } from "./print-view.js";
-import { renderClassChips, renderDataStates, renderDisciplineChips, renderResults } from "./render.js";
-import { chooseClass, clearDisciplines, loadChoice, printTitle, resolveChoice, saveChoice, toggleDiscipline } from "./state.js";
+import {
+  renderChildRow,
+  renderClassChips,
+  renderDataStates,
+  renderDisciplineChips,
+  renderFamily,
+  renderResults,
+} from "./render.js";
+import { chooseClass, clearDisciplines, toggleDiscipline } from "./state.js";
 
 const $ = (id) => document.getElementById(id);
 
 let model = null;
-let sel = null;
-const openNotes = new Set(); // sheet rows whose note is shown
+let family = null;
+const openNotes = new Set(); // note keys (sheet row, with a child prefix for several children) whose note is shown
 const focusOpened = new Set(); // notes opened by keyboard focus, closed again on blur
 
 function resultElements() {
@@ -33,21 +54,60 @@ function focusedControl() {
   return `[data-action="${node.dataset.action}"][data-value="${CSS.escape(node.dataset.value || "")}"]`;
 }
 
-function render() {
-  const focus = focusedControl();
+const childChip = (index) => `[data-action="child"][data-value="${index}"]`;
+
+// focusTo: a selector to focus after rendering instead of the current control
+// (adding or removing a child moves focus to the active child's chip).
+function render(focusTo = null) {
+  const focus = focusTo || focusedControl();
+  const sel = activeChild(family);
+  const several = family.children.length > 1;
+  renderChildRow(
+    { chips: $("childChips"), add: $("childAdd"), addNote: $("childAddNote"), remove: $("childRemove"), nameField: $("childNameField") },
+    family,
+  );
+  // While the parent types, the field keeps its own text (and caret).
+  const name = $("childName");
+  if (document.activeElement !== name) name.value = sel.name;
   renderClassChips($("classChips"), model, sel);
   renderDisciplineChips($("disciplineChips"), model, sel);
-  renderResults(resultElements(), model, sel, openNotes);
+  $("results").hidden = several;
+  $("family").hidden = !several;
+  if (several) {
+    renderFamily(
+      {
+        title: $("familyTitle"),
+        pdfButton: $("familyPdfButton"),
+        pdfNote: $("familyPdfNote"),
+        cards: $("familyCards"),
+        live: $("familyLive"),
+        listHeadTemplate: $("listHead"),
+        emptyText: $("empty").textContent,
+      },
+      model,
+      family,
+      openNotes,
+    );
+  } else {
+    renderResults(resultElements(), model, sel, openNotes);
+  }
+  // Until milestone 7 the print page shows the active child only.
   renderPrintPage($("printPage"), model, sel);
-  saveChoice(sel);
+  saveFamily(family);
   if (focus) document.querySelector(focus)?.focus();
 }
 
-function update(next) {
-  const same = next.cls === sel.cls && next.disciplines.join() === sel.disciplines.join();
-  if (same) return;
-  sel = next;
-  render();
+function update(next, focusTo = null) {
+  if (JSON.stringify(next) === JSON.stringify(family)) return;
+  family = next;
+  render(focusTo);
+}
+
+// Adding or removing a child shifts the note keys of the cards.
+function updateChildren(next) {
+  openNotes.clear();
+  focusOpened.clear();
+  update(next, childChip(next.active));
 }
 
 // "?" of an uncertain row (§4.6): the note is shown or hidden in place.
@@ -64,9 +124,12 @@ document.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-action]");
   if (!button || !model) return;
   const { action, value } = button.dataset;
-  if (action === "class") update(chooseClass(model, sel, value || null));
-  else if (action === "discipline") update(toggleDiscipline(model, sel, value));
-  else if (action === "disciplines-all") update(clearDisciplines(sel));
+  if (action === "child") update(setActiveChild(family, Number(value)));
+  else if (action === "child-add") updateChildren(addChild(family));
+  else if (action === "child-remove") updateChildren(removeChild(family));
+  else if (action === "class") update(updateActiveChild(family, (sel) => chooseClass(model, sel, value || null)));
+  else if (action === "discipline") update(updateActiveChild(family, (sel) => toggleDiscipline(model, sel, value)));
+  else if (action === "disciplines-all") update(updateActiveChild(family, clearDisciplines));
   else if (action === "note") {
     // A note opened by focus stays open (pinned); otherwise the click toggles it.
     if (focusOpened.delete(value)) return;
@@ -86,10 +149,15 @@ let screenTitle = null;
 
 function beforePrint() {
   if (!model) return;
-  renderPrintPage($("printPage"), model, sel);
+  renderPrintPage($("printPage"), model, activeChild(family));
   if (screenTitle === null) screenTitle = document.title;
-  document.title = sel.cls ? printTitle(model, sel) : screenTitle;
+  document.title = canPrintFamily(family) ? familyPrintTitle(model, family) : screenTitle;
 }
+
+// The first name of the active child (§14.2), stored as it is typed.
+$("childName").addEventListener("input", (event) => {
+  if (model) update(setChildName(family, event.target.value));
+});
 
 function afterPrint() {
   if (screenTitle === null) return;
@@ -99,7 +167,7 @@ function afterPrint() {
 
 // The print page is measured to fit (print-view.js); once the web fonts are
 // in, measure again with them.
-document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, sel));
+document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, activeChild(family)));
 
 window.addEventListener("beforeprint", beforePrint);
 window.addEventListener("afterprint", afterPrint);
@@ -129,7 +197,7 @@ async function start() {
     const result = await loadData(config, { mode: pickMode(config, location.search) });
     if (result.fallbackReason) console.warn(`Showing the snapshot: ${result.fallbackReason}`);
     model = result.model;
-    sel = resolveChoice(model, { search: location.search, stored: loadChoice() });
+    family = resolveFamily(model, { search: location.search, ...loadFamily() });
     renderDataStates(
       {
         banners: $("banners"),

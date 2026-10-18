@@ -1,6 +1,7 @@
 // Screen DOM (SPEC 1.1 §4). Text from the Sheet only ever goes in through
 // textContent and setAttribute (CLAUDE.md): there is no innerHTML here.
 
+import { MAX_CHILDREN, canPrintFamily, childLabel, childTitle, familyHeading } from "./children.js";
 import { el, setColor } from "./dom.js";
 import { TAB_NAMES } from "./model.js";
 import {
@@ -97,6 +98,25 @@ export function renderClassChips(container, model, sel) {
   container.replaceChildren(chip({ action: "class", label: COPY.all, pressed: sel.cls === null }), ...rows);
 }
 
+// Gyerek row (SPEC 1.2 §14.2). els: { chips, add, addNote, remove, nameField }
+export function renderChildRow(els, family) {
+  const n = family.children.length;
+  els.chips.replaceChildren(
+    ...family.children.map((_, i) =>
+      chip({ action: "child", value: String(i), label: childLabel(family, i), pressed: i === family.active }),
+    ),
+  );
+  const full = n >= MAX_CHILDREN;
+  els.add.disabled = full;
+  els.addNote.hidden = !full;
+  if (full) els.add.setAttribute("aria-describedby", els.addNote.id);
+  else els.add.removeAttribute("aria-describedby");
+  els.remove.hidden = n <= 1;
+  // The name shows nowhere with one child, so its field waits for the second
+  // (owner decision, 2026-10-18).
+  els.nameField.hidden = n <= 1;
+}
+
 // "Összes", then every activity of the Foglalkozástípusok tab, in its order.
 export function renderDisciplineChips(container, model, sel) {
   const none = sel.disciplines.length === 0;
@@ -130,8 +150,10 @@ function classCell(targets) {
   return el("div", { class: "item-class" }, children);
 }
 
-function itemRow(model, item, activity, isChoice, openNotes) {
-  const key = String(item.sheetRow);
+// keyPrefix tells the cards of several children apart ("2-29"), as the same
+// Sheet row may show in more than one card.
+function itemRow(model, item, activity, isChoice, openNotes, keyPrefix) {
+  const key = `${keyPrefix}${item.sheetRow}`;
   const noteId = `note-${key}`;
   const hasNote = item.uncertain && item.note !== "";
   const open = hasNote && openNotes.has(key);
@@ -209,6 +231,12 @@ export function renderResults(els, model, sel, openNotes) {
   if (canPrint) els.pdfButton.removeAttribute("aria-describedby");
   else els.pdfButton.setAttribute("aria-describedby", els.pdfNote.id);
 
+  renderList(els, model, sel, items, openNotes);
+}
+
+// The day list of one result card. options: keyPrefix for the note keys, dayTag
+// for the day headings (h4 under a child's h3).
+function renderList(els, model, sel, items, openNotes, { keyPrefix = "", dayTag = "h3" } = {}) {
   els.listHead.hidden = items.length === 0;
   els.empty.hidden = items.length > 0;
   const marked = choiceItems(model, sel, items);
@@ -218,15 +246,62 @@ export function renderResults(els, model, sel, openNotes) {
       el(
         "section",
         { class: "day" },
-        el("h3", { class: "day-title", text: day.name }),
+        el(dayTag, { class: "day-title", text: day.name }),
         el(
           "ul",
           { class: "day-items" },
-          dayItems.map((item) => itemRow(model, item, activities.get(item.activityId), marked.has(item), openNotes)),
+          dayItems.map((item) =>
+            itemRow(model, item, activities.get(item.activityId), marked.has(item), openNotes, keyPrefix),
+          ),
         ),
       ),
     ),
   );
+}
+
+// 2–4 children (SPEC 1.2 §14.3): a heading with the shared PDF button, then
+// one result card per child. The column headings and the empty text are taken
+// from the one-child card in index.html, so the copy lives in one place.
+// els: { title, pdfButton, pdfNote, cards, live, listHeadTemplate, emptyText }
+export function renderFamily(els, model, family, openNotes) {
+  els.title.textContent = familyHeading(family);
+  const canPrint = canPrintFamily(family);
+  els.pdfButton.disabled = !canPrint;
+  els.pdfNote.hidden = canPrint;
+  if (canPrint) els.pdfButton.removeAttribute("aria-describedby");
+  else els.pdfButton.setAttribute("aria-describedby", els.pdfNote.id);
+
+  const cards = family.children.map((sel, i) => {
+    const items = visibleItems(model, sel);
+    const titleId = `child-title-${i + 1}`;
+    const listHead = els.listHeadTemplate.cloneNode(true);
+    listHead.removeAttribute("id");
+    const days = el("div", { class: "days" });
+    const empty = el("p", { class: "empty", text: els.emptyText });
+    renderList({ listHead, days, empty }, model, sel, items, openNotes, { keyPrefix: `${i + 1}-`, dayTag: "h4" });
+    return el(
+      "section",
+      { class: "results card child-card", "aria-labelledby": titleId },
+      el(
+        "div",
+        { class: "results-head" },
+        el(
+          "div",
+          { class: "results-summary" },
+          el("h3", { id: titleId, text: childTitle(model, family, i) }),
+          el("span", { class: "results-count", text: countLabel(items.length) }),
+        ),
+      ),
+      listHead,
+      days,
+      empty,
+    );
+  });
+  els.cards.replaceChildren(...cards);
+
+  // §7 (1.2): the active child's title and count are read out after a change.
+  const active = family.active;
+  els.live.textContent = `${childTitle(model, family, active)}, ${countLabel(visibleItems(model, family.children[active]).length)}`;
 }
 
 // ---------------------------------------------------------------------------

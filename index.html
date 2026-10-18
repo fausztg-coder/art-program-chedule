@@ -39,6 +39,24 @@
     </div>
 
     <section class="selector card" aria-label="Választó">
+      <!-- Several children (SPEC 1.2 §14.2): the selectors below edit the active child. -->
+      <fieldset class="choice">
+        <legend class="choice-label">Gyerek</legend>
+        <div class="chips child-line">
+          <span class="child-chips" id="childChips"></span>
+          <span class="child-actions">
+            <button class="secondary-button" id="childAdd" type="button" data-action="child-add">+ Gyerek hozzáadása</button>
+            <span class="child-note" id="childAddNote" hidden>Legfeljebb 4 gyerek adható meg.</span>
+            <button class="secondary-button" id="childRemove" type="button" data-action="child-remove" hidden>Gyerek törlése</button>
+          </span>
+        </div>
+        <div class="child-name" id="childNameField" hidden>
+          <label class="child-name-label" for="childName">Keresztnév</label>
+          <span class="child-name-help" id="childNameHelp">nem kötelező · csak ezen az eszközön tárolódik</span>
+          <input id="childName" type="text" maxlength="20" autocomplete="off" spellcheck="false" aria-describedby="childNameHelp">
+        </div>
+      </fieldset>
+      <div class="selector-divider" aria-hidden="true"></div>
       <fieldset class="choice">
         <legend class="choice-label">Osztály</legend>
         <div class="chips class-chips" id="classChips"></div>
@@ -51,7 +69,7 @@
       </fieldset>
     </section>
 
-    <section class="results card" aria-labelledby="resultTitle">
+    <section class="results card" id="results" aria-labelledby="resultTitle">
       <div class="results-head">
         <div class="results-summary" aria-live="polite" aria-atomic="true">
           <h2 id="resultTitle"></h2>
@@ -65,6 +83,19 @@
       <div class="list-head" id="listHead" aria-hidden="true"><span>IDŐPONT</span><span>TANSZAK</span><span>TANÁR</span><span>TEREM</span><span>OSZTÁLY</span></div>
       <div class="days" id="days"></div>
       <p class="empty" id="empty" hidden>Erre a választásra nincs foglalkozás.</p>
+    </section>
+
+    <!-- 2–4 children (SPEC 1.2 §14.3): one result card per child, built by src/render.js. -->
+    <section class="family" id="family" aria-labelledby="familyTitle" hidden>
+      <div class="family-head">
+        <h2 id="familyTitle"></h2>
+        <div class="pdf">
+          <span class="pdf-note" id="familyPdfNote">PDF/nyomtatás csak akkor érhető el, ha minden gyereknél ki van választva egy osztály.</span>
+          <button class="pdf-button" id="familyPdfButton" type="button" data-action="print" aria-describedby="familyPdfNote" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>PDF/nyomtatás</button>
+        </div>
+      </div>
+      <div class="family-cards" id="familyCards"></div>
+      <p class="sr-only" id="familyLive" aria-live="polite" aria-atomic="true"></p>
     </section>
 
     <details class="issues card" id="issues" hidden>
