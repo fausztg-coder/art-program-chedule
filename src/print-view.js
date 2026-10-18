@@ -1,9 +1,22 @@
-// Print page (SPEC 1.1 §6.4): an A4 landscape page that only print media show
-// (css/print.css). Rebuilt from the current selection on every change and
-// again right before printing. Sheet text via textContent only (src/dom.js).
+// Print pages: only print media show them (css/print.css). One child: one A4
+// landscape sheet with the timetable grid (SPEC 1.1 §6.4). 2–4 children: two
+// children per sheet in a compact list (SPEC 1.2 §14.4). Rebuilt from the
+// current choice on every change and again right before printing. Sheet text
+// via textContent only (src/dom.js).
 
+import { canPrintFamily, childTitle, paginate } from "./children.js";
 import { el, setColor } from "./dom.js";
-import { countLabel, printLayout, schoolYearLabel, selectionTitle, SOFT_HYPHEN, softHyphenate, timeRange } from "./state.js";
+import {
+  countLabel,
+  periodLabel,
+  printLayout,
+  printList,
+  schoolYearLabel,
+  selectionTitle,
+  SOFT_HYPHEN,
+  softHyphenate,
+  timeRange,
+} from "./state.js";
 
 export const PRINT_COPY = {
   school: "Hunyadi Mátyás Általános Iskola",
@@ -14,6 +27,8 @@ export const PRINT_COPY = {
   uncertainLegend: "? = az adat pontosítás alatt",
   footer: "Hunyadi Mátyás Általános Iskola · Művészeti képzés",
   pickClass: "Válassz egy osztályt a nyomtatáshoz.",
+  pickClasses: "Válassz minden gyereknél egy osztályt a nyomtatáshoz.",
+  noLesson: "–",
 };
 
 // Grid lines: column 1 is the hour column, row 1 the day headers.
@@ -112,22 +127,47 @@ function grid(model, layout) {
   return node;
 }
 
-export function renderPrintPage(container, model, sel) {
+function letterhead(model) {
+  const year = schoolYearLabel(model.settings.tanev);
+  return el(
+    "div",
+    { class: "pp-letterhead" },
+    el("span", { class: "pp-school", text: PRINT_COPY.school }),
+    el("span", { class: "pp-program", text: PRINT_COPY.program }),
+    year ? el("span", { class: "pp-year", text: year }) : null,
+  );
+}
+
+const footer = (uncertain) => [
+  uncertain ? el("p", { class: "pp-legend", text: PRINT_COPY.uncertainLegend }) : null,
+  el("p", { class: "pp-footer", text: PRINT_COPY.footer }),
+];
+
+// container: #printPage; family: { children, active } (src/children.js).
+export function renderPrintPage(container, model, family) {
+  if (family.children.length === 1) {
+    renderGridSheet(container, model, family.children[0]);
+    return;
+  }
+  if (!canPrintFamily(family)) {
+    container.replaceChildren(el("p", { class: "pp-message", text: PRINT_COPY.pickClasses }));
+    return;
+  }
+  renderCompactSheets(container, model, family);
+}
+
+// ---------------------------------------------------------------------------
+// One child: the timetable grid (SPEC 1.1 §6.4)
+
+function renderGridSheet(container, model, sel) {
   if (!sel.cls) {
     container.replaceChildren(el("p", { class: "pp-message", text: PRINT_COPY.pickClass }));
     return;
   }
   const layout = printLayout(model, sel);
   const count = layout.days.reduce((n, d) => n + d.cards.length, 0);
-  const year = schoolYearLabel(model.settings.tanev);
   const parts = [
-    el(
-      "div",
-      { class: "pp-letterhead" },
-      el("span", { class: "pp-school", text: PRINT_COPY.school }),
-      el("span", { class: "pp-program", text: PRINT_COPY.program }),
-      year ? el("span", { class: "pp-year", text: year }) : null,
-    ),
+    letterhead(model),
     el(
       "div",
       { class: "pp-title" },
@@ -140,12 +180,119 @@ export function renderPrintPage(container, model, sel) {
       el("span", { class: "pp-count", text: countLabel(count) }),
     ),
     grid(model, layout),
-    layout.uncertain ? el("p", { class: "pp-legend", text: PRINT_COPY.uncertainLegend }) : null,
-    el("p", { class: "pp-footer", text: PRINT_COPY.footer }),
+    ...footer(layout.uncertain),
   ];
-  // replaceChildren would turn a null into the text "null".
-  container.replaceChildren(...parts.filter(Boolean));
+  // el() drops the nulls; replaceChildren would turn one into the text "null".
+  container.replaceChildren(el("div", { class: "pp-sheet" }, parts));
   fitPrintPage(container);
+}
+
+// ---------------------------------------------------------------------------
+// 2–4 children: a compact list, two children per sheet (SPEC 1.2 §14.4)
+
+function entry(model, item, activity) {
+  const node = el(
+    "div",
+    { class: "pp-entry" },
+    el(
+      "span",
+      { class: "pp-entry-time" },
+      timeRange(model, item),
+      " ",
+      el("span", { class: "pp-entry-lessons", text: periodLabel(item) }),
+    ),
+    // A no-break space keeps the "?" with the name.
+    el("span", { class: "pp-entry-name", text: item.uncertain ? `${item.activity} ?` : item.activity }),
+    item.teacher || item.room
+      ? el("span", { class: "pp-entry-meta", text: [item.teacher, item.room].filter(Boolean).join(" · ") })
+      : null,
+  );
+  if (activity) {
+    setColor(node, "--tint", activity.tint);
+    setColor(node, "--dot", activity.color);
+  }
+  return node;
+}
+
+function block(model, family, index) {
+  const list = printList(model, family.children[index]);
+  const activities = new Map(model.activities.map((a) => [a.id, a]));
+  const entryOf = (item) => entry(model, item, activities.get(item.activityId));
+  const days = list.days.map(({ day, parts }) =>
+    el(
+      "section",
+      { class: "pp-col" },
+      el("h3", { class: "pp-col-day", text: day.name }),
+      parts.length
+        ? parts.flatMap((part) =>
+            part.choice && part.items.length > 1
+              ? el("div", { class: "pp-group" }, el("span", { class: "pp-group-label", text: PRINT_COPY.choice }), part.items.map(entryOf))
+              : part.items.map(entryOf),
+          )
+        : el("span", { class: "pp-none", text: PRINT_COPY.noLesson }),
+    ),
+  );
+  const node = el(
+    "section",
+    { class: "pp-block" },
+    el(
+      "div",
+      { class: "pp-block-head" },
+      el("h2", { class: "pp-block-title", text: childTitle(model, family, index) }),
+      el("span", { class: "pp-block-count", text: countLabel(list.count) }),
+    ),
+    el("div", { class: "pp-cols" }, days),
+  );
+  return { node, uncertain: list.uncertain };
+}
+
+function compactSheets(model, family, pages, full) {
+  return pages.map((indexes) => {
+    const blocks = indexes.map((i) => block(model, family, i));
+    blocks.forEach((b, k) => full[indexes[k]] && b.node.classList.add("pp-block-full"));
+    // A lone half-page child leaves the lower half empty (dashed line).
+    const spare = indexes.length === 1 && !full[indexes[0]] ? el("section", { class: "pp-block pp-spare", "aria-hidden": "true" }) : null;
+    return el(
+      "div",
+      { class: "pp-sheet pp-compact" },
+      letterhead(model),
+      blocks.map((b) => b.node),
+      spare,
+      footer(blocks.some((b) => b.uncertain)),
+    );
+  });
+}
+
+// Laid out off screen at the A4 page area's size (as fitPrintPage does): a
+// block whose days do not fit half a page gets the tighter setting, and if
+// that is not enough either, a page of its own. Text is never cut off.
+function renderCompactSheets(container, model, family) {
+  const n = family.children.length;
+  const full = Array(n).fill(false);
+  container.replaceChildren(...compactSheets(model, family, paginate(full), full));
+  container.classList.add("pp-measuring");
+  try {
+    const blocks = [...container.querySelectorAll(".pp-block:not(.pp-spare)")];
+    blocks.forEach((b, i) => {
+      if (overflows(b)) b.classList.add("pp-block-tight");
+      if (overflows(b)) full[i] = true;
+    });
+    if (full.some(Boolean)) {
+      container.replaceChildren(...compactSheets(model, family, paginate(full), full));
+      for (const b of container.querySelectorAll(".pp-block:not(.pp-spare)")) if (overflows(b)) b.classList.add("pp-block-tight");
+    }
+  } finally {
+    container.classList.remove("pp-measuring");
+  }
+}
+
+// Whether a block's tallest day column is taller than the space it has (the
+// columns themselves are stretched to the block, so their content is measured).
+function overflows(blockNode) {
+  const cols = blockNode.querySelector(".pp-cols");
+  const top = cols.getBoundingClientRect().top;
+  const need = Math.max(...[...cols.children].map((col) => col.lastElementChild.getBoundingClientRect().bottom - top));
+  return need > cols.clientHeight + 0.5;
 }
 
 // The page is laid out off screen with the print styles and what does not fit

@@ -1,4 +1,4 @@
-# Kézi ellenőrzések (1.1)
+# Kézi ellenőrzések (1.1, 1.2)
 
 A `SPEC.md` 8. szakaszának azok a pontjai, amelyeket a `node --test` nem tud ellenőrizni: megjelenés, böngészőviselkedés, akadálymentesség, nyomtatás. Minden pontot pipálj ki böngészőnként; ha valami eltér, írd mellé a böngészőt, a szélességet és egy képernyőképet.
 
@@ -69,6 +69,7 @@ A logikai részeket (célzás, szűrés, cím, darabszám, Választható, slug, 
 4. ☐ Válassz valamit, zárd be a lapot, és nyisd meg az oldalt paraméter nélkül: az utolsó választás visszajön.
 5. ☐ Paraméteres link megnyitásakor az URL felülírja a megjegyzett választást.
 6. ☐ Safari privát módban (vagy letiltott sütikkel/tárolóval) az oldal hiba nélkül működik, csak nem jegyzi meg a választást.
+7. ☐ **1.1 → 1.2:** egy böngészőben, ahol az 1.1-es oldal már megjegyzett egy választást (régi tárolókulcs), az 1.2 első megnyitásakor ugyanaz a választás jön vissza, 1 gyerekként.
 
 ## F. Választható és bizonytalan adat, képernyőn (8.7)
 
@@ -167,3 +168,51 @@ Ismert korlát: ha egy osztálynál egy idősávba **három vagy több** foglalk
 
 1. ☐ Nincs (SPEC 1. „Nincs benne”): navigációs menü, eseménynaptár, hírek, kapcsolat oldal, oldalsó vagy alsó lábléc-menü, belépés, jelentkezés; több gyerek (gyerekprofilok, családi nézet), időütközés-jelzés, naptár-feliratkozás (.ics); tanári és teremnézet; sötét mód (sötét rendszertémában is világos marad az oldal). Analitika és külső script sincs (CLAUDE.md).
 2. ☐ A tanárok neve csak keresztnév (ahogy a Sheetben áll). Ha teljes név jelenik meg, azt a Sheetben kell javítani, nem a kódban.
+
+## L. Több gyerek (8.19–8.24, SPEC 1.2 14. szakasz)
+
+Mind a négy böngészőben, 390 és 1440 px-en. Minta: `?o=3.b&f=balett&gy=2&o2=5.a&f2=keramia` (a SPEC példája), `?o=4.a&gy=2&o2=5.a` (Választható és bizonytalan sor), `?o=1.a&gy=4&o2=1.b&o3=4.a&o4=4.b` (a legtöbb órás osztályok).
+
+**Gyerekek kezelése (8.19–8.20):**
+
+1. ☐ Paraméter nélkül, privát ablakban: a választókártya tetején a „Gyerek” sorban egy chip („1. gyerek”) és a „+ Gyerek hozzáadása” gomb látszik; „Gyerek törlése” és névmező nincs. Minden más az 1.1 szerint működik.
+2. ☐ „+ Gyerek hozzáadása”: megjelenik a „2. gyerek”, ő a kijelölt, az osztály és a tanszak „Összes”; megjelenik a „Gyerek törlése” és a „Keresztnév” mező a segédszöveggel („nem kötelező · csak ezen az eszközön tárolódik”).
+3. ☐ Válts vissza az „1. gyerek”-re: az osztály- és tanszakválasztó az ő választását mutatja; a 2. gyerek választása nem változott.
+4. ☐ Négy gyereknél a „+ Gyerek hozzáadása” le van tiltva, mellette (mobilon alatta) „Legfeljebb 4 gyerek adható meg.”
+5. ☐ „Gyerek törlése” az aktív gyereket törli; az előtte álló lesz a kijelölt; a névtelen gyerekek újraszámozódnak („3. gyerek” → „2. gyerek”). Egy gyereknél a gomb eltűnik.
+
+**Eredmény (8.21):**
+
+6. ☐ Két vagy több gyereknél felül „{k} gyerek órarendje” és a közös „PDF/nyomtatás” gomb, alatta gyerekenként egy kártya „{jelölés} – {cím}” címmel és darabszámmal, mindegyik a saját Választható-jelölésével (pl. 4.a kedd: Modern tánc / Képzőművészet).
+7. ☐ Ha ugyanaz a bizonytalan sor két gyereknél is látszik (pl. `?o=8.m&gy=2&o2=8.m`), a „?” mindig a saját kártyájában nyitja a megjegyzést.
+8. ☐ 390, 800 és 1440 px-en nincs vízszintes görgetés; a két gomb mobilon a chipek alatt áll.
+
+**Keresztnév (8.22):**
+
+9. ☐ Írj be egy nevet (pl. „Bence”): a chip és a kártya címe azonnal átvált, a gépelés nem ugrik ki a mezőből. 20 karakternél több nem írható be.
+10. ☐ A címsorban (URL) a név **nem** jelenik meg, csak `gy=…`, `o2=…`.
+11. ☐ Zárd be és nyisd meg újra az oldalt: a gyerekek, a választásaik és a név visszajönnek. Privát ablakban (vagy letiltott tárolóval) az oldal hiba nélkül működik, csak nem jegyez meg semmit.
+
+**Link (8.23):**
+
+12. ☐ A minta-link egy **másik böngészőben** ugyanazt a két gyereket és választást állítja vissza, név nélkül („1. gyerek”, „2. gyerek”).
+13. ☐ `?gy=abc&o2=2.a` és `?gy=9` nem okoz hibát (2, illetve 4 gyerek).
+
+**Billentyűzet és képernyőolvasó:**
+
+14. ☐ Tab-bal elérhető minden gyerekchip, mindkét gomb és a névmező; Enter és Szóköz működik. Hozzáadás után a fókusz az új gyerek chipjén, törlés után az aktív gyerek chipjén van.
+15. ☐ Képernyőolvasóval (VoiceOver / TalkBack / NVDA): a „Gyerek” csoport neve felolvasódik; gyerekváltás, hozzáadás és törlés után az aktív gyerek címe és darabszáma felolvasódik.
+
+**PDF (8.24):**
+
+16. ☐ Ha valamelyik gyereknél „Összes” az osztály, a gomb le van tiltva, mellette: „PDF/nyomtatás csak akkor érhető el, ha minden gyereknél ki van választva egy osztály.” Ctrl+P-re a lapon: „Válassz minden gyereknél egy osztályt a nyomtatáshoz.”
+17. ☐ 2 gyerek: egy oldal, két blokk egymás alatt. 3 gyerek: két oldal, a második alsó fele üres (szaggatott vonal). 4 gyerek: két oldal. Az előnézet és a mentett PDF oldalszáma ugyanez.
+18. ☐ Egy blokk: „{jelölés} – {cím}” és darabszám, alatta öt naposzlop (Hétfő … Péntek); a bejegyzéseken időpont és órasorszám, tanszak, tanár · terem; foglalkozás nélküli napon „–”; az átfedő Választható bejegyzések fölött egyszer „VÁLASZTHATÓ”, bal oldalt vonal. Semmi nincs levágva, a legkisebb szöveg is jól olvasható.
+19. ☐ Bizonytalan sor: a név után „?”, a lábléc fölött „? = az adat pontosítás alatt” – csak azon az oldalon, ahol van bizonytalan bejegyzés.
+20. ☐ A javasolt fájlnév / dokumentumcím „Művészeti órarend – {jelölés1}, {jelölés2}…” (pl. „Művészeti órarend – Anna, 2. gyerek”). Nyomtatás után a lap címe visszaáll.
+21. ☐ A PDF szövege kijelölhető és kereshető (pl. „Kerámia”, „Képzőművészet”); szürkeárnyalatos nyomtatásban is olvasható.
+22. ☐ Ctrl+P / Cmd+P ugyanezt adja; gyerekváltás vagy választásváltás után újra nyomtatva a friss állapot látszik.
+23. ☐ **iPhone:** Megosztás → Nyomtatás → (két ujjal széthúzva) Megosztás → Mentés a Fájlokba; a mentett PDF minden oldalt tartalmaz. Ha a fájlnév nem a cím, írd fel.
+24. ☐ Egy gyereknél a PDF változatlanul a J szakasz szerinti egyoldalas rács.
+
+Ismert korlát: ha egy osztálynál egy napra kb. 12-nél több foglalkozás esik (öt órával csak sok párhuzamos választásnál fordulhat elő), egy blokk egész oldalon sem fér el, és a nap alja levágódhat. Fél oldalon el nem férő blokk egész oldalt kap; ez helyes működés.

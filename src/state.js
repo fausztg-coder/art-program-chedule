@@ -189,6 +189,35 @@ export function printLayout(model, sel) {
   return { periods: model.periods, days, uncertain: items.some((item) => item.uncertain) };
 }
 
+// The compact list of one child for the two-per-page PDF (SPEC 1.2 §14.4):
+// every day (also the empty ones), its items in list order; overlapping
+// Választható items (§4.6) form one group. parts: [{ choice, items }], where a
+// part that is not a choice group holds one item.
+export function printList(model, sel) {
+  const items = sel.cls ? visibleItems(model, sel) : [];
+  const marked = choiceItems(model, sel, items);
+  const days = model.days.map((day) => {
+    const parts = [];
+    let group = null;
+    let groupEnd = -1;
+    for (const item of items.filter((i) => i.day === day.key)) {
+      const lessons = lessonsOf(model, item);
+      if (!lessons.length) continue;
+      const last = lessons[lessons.length - 1];
+      if (group && marked.has(item) && lessons[0] <= groupEnd) {
+        group.items.push(item);
+        groupEnd = Math.max(groupEnd, last);
+      } else {
+        group = { choice: marked.has(item), items: [item] };
+        parts.push(group);
+        groupEnd = last;
+      }
+    }
+    return { day, parts };
+  });
+  return { days, count: items.length, uncertain: items.some((item) => item.uncertain) };
+}
+
 // Soft hyphens (U+00AD) at Hungarian syllable boundaries, for the narrow
 // side-by-side print cards: a word too wide for its lane then breaks as
 // "Képző-művészet", never at an arbitrary letter, even in a browser without a

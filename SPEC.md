@@ -1,6 +1,8 @@
 # Művészeti órarend-kereső – 1.1 specifikáció
 
-Verzió: 1.1 · 2026-09-26 · Hunyadi Mátyás Általános Iskola (Budapest XIII.), délutáni művészeti foglalkozások
+Verzió: 1.2 · 2026-10-18 · Hunyadi Mátyás Általános Iskola (Budapest XIII.), délutáni művészeti foglalkozások
+
+> **1.2.** Az 1.1-hez képest egyetlen új funkció: több gyerek (legfeljebb 4) választása és közös PDF-je, lásd a 14. szakaszt. A többi szakasz az 1.1 szerint érvényes; ahol a 14. szakasz eltér tőlük, ott a 14. az irányadó. Az 1.2 változásait ³ jelöli.
 
 Ez a fájl önmagában teljes. A forrásdokumentumok (1.0 specifikáció, dizájnspecifikáció, 1.1 specifikáció, v3 dizájn canvas) claude.ai-on élnek; minden, ami a fejlesztéshez kell, ide van átemelve. A vizuális referencia a `docs/design/` mappa három `.dc.html` fájlja (lásd 9. szakasz).
 
@@ -15,12 +17,14 @@ Statikus, mobilon is jól használható oldal, amelyen a szülő kiválaszt egy 
 1. Több tanszak kiválasztása egyszerre.
 2. PDF-export a böngésző beépített nyomtatásával.
 
+**Új az 1.2-ben³:** több gyerek (legfeljebb 4) egyidejű választása, gyerekenként saját osztállyal és tanszakokkal, egymás alatti eredménylistával és egy közös PDF-fel (14. szakasz).
+
 **Az új dizájnnal együtt érkezik:** új megjelenés (bordó–arany, krém alapszínek), eredménylista a heti rács helyett, „Összes” osztály nézet (minden osztály órái egy listában, ez a betöltési alapállapot).
 
 **Nincs benne:**
 
 - navigációs menü, eseménynaptár, hírek, kapcsolat oldal, oldalsó/alsó lábléc-menü, belépés, jelentkezés;
-- több gyerek (gyerekprofilok, családi nézet), időütközés-jelzés, naptár-feliratkozás (.ics);
+- gyerekprofil szerveren vagy fiókban, 4-nél több gyerek, a gyerekek óráit egy rácsba összevonó nézet³; időütközés-jelzés (két gyerek között sem³), naptár-feliratkozás (.ics);
 - tanári és teremnézet;
 - sötét mód (a dizájn nem tartalmaz sötét tokeneket; lásd 13. szakasz);
 - PDF-könyvtár (pl. jsPDF), bármilyen npm-függőség, build lépés.
@@ -48,7 +52,7 @@ Statikus, mobilon is jól használható oldal, amelyen a szülő kiválaszt egy 
 
 **Technikai kockázat:** a közzétett Google-CSV böngészőből (CORS) általában olvasható, de ezt az első mérföldkőben valódi közzétett táblával ellenőrizni kell. Ha nem működik: `gviz/tq?tqx=out:csv` végpont, vagy csak snapshotos üzem óránkénti Actionnel.
 
-**Adatvédelem:** a közzétett CSV nyilvános. Csak tanári keresztnevek és teremnevek szerepelhetnek benne. A tábla tulajdonosa és szerkesztője az iskola; a repo karbantartója a kódért és a `config.js`-ért felel, az adatért nem.
+**Adatvédelem:** a közzétett CSV nyilvános. Csak tanári keresztnevek és teremnevek szerepelhetnek benne. A tábla tulajdonosa és szerkesztője az iskola; a repo karbantartója a kódért és a `config.js`-ért felel, az adatért nem. A szülő által megadott gyerek-keresztnév (14.6) csak a szülő böngészőjében tárolódik; a Sheetbe, az URL-be, a hálózatra és a repóba nem kerül³.
 
 ---
 
@@ -331,6 +335,7 @@ Darabszám: „{n} foglalkozás hetente”, n = a megjelenő listaelemek száma.
 - **Betöltéskor:** osztály „Összes”, tanszak „Összes” – az első nézet minden osztály minden óráját listázza, a PDF-gomb le van tiltva.
 - **URL:** `?o=3.b&f=balett,keramia`. „Összes” osztálynál nincs `o`, üres tanszak-halmaznál nincs `f`. A kulcsok a 3.5 szerinti slugok. Ismeretlen osztály vagy kulcs figyelmen kívül marad, hibát nem okoz. Minden változáskor `history.replaceState`.
 - **Megjegyzett választás:** a böngésző (`localStorage`, `try/catch`-ben) megjegyzi az utolsó választást; ha az URL-ben van `o` vagy `f`, az URL felülírja.
+- Több gyereknél az URL és a tárolás a 14.5 szerint bővül³; az itteni formátum az 1. gyereké marad.
 
 ---
 
@@ -344,6 +349,8 @@ Darabszám: „{n} foglalkozás hetente”, n = a megjelenő listaelemek száma.
 | Letiltott | osztály = „Összes” | `disabled-fill`, `ink-muted` felirat, `cursor: not-allowed` | gomb + megjegyzés: „PDF/nyomtatás csak egy osztály kiválasztásakor érhető el.” (asztali: a gombtól balra; mobil: alatta, középre) |
 
 Letiltva natív `disabled`, a megjegyzés `aria-describedby`-jal kapcsolódik.
+
+Több gyereknél a gomb helye, állapota és a PDF elrendezése a 14.3–14.4 szerint változik³.
 
 ### 6.2 Előállítás
 
@@ -409,6 +416,7 @@ Csak a kijelölt tanszakok kártyái szerepelnek; üres tanszak-halmaznál az os
 - Chipek és gombok legalább 44 px magasak (mobil PDF-gomb 48 px).
 - A fejléc díszkörei és minden ikon `aria-hidden`; minden ikon mellett látható szöveg van.
 - A PDF valódi szöveg, dokumentumcíme az eredménycím.
+- Több gyereknél³: a Gyerek csoport `fieldset`, `legend` „Gyerek”; a gyerekchipek natív `<button>` elemek `aria-pressed`-del (egyszeres választás); a keresztnév-mezőnek látható `<label>`-je van; a „+ Gyerek hozzáadása” és a „Gyerek törlése” natív gomb. Gyerekváltás, hozzáadás és törlés után az aktív gyerek eredménycíme és darabszáma `aria-live`-val felolvasódik.
 
 ---
 
@@ -445,6 +453,15 @@ Az 1.1 akkor kész, ha mind teljesül. Mindegyikhez tartozzon automatizált tesz
 16. A napi snapshot-Action érvénytelen adatnál nem commitol, hanem hibával leáll.
 17. Nincs npm-függőség és nincs build lépés; a GitHub Pages deploy a `main` ágról működik.
 18. Az 1. szakasz „Nincs benne” listájából semmi nem jelenik meg az oldalon.
+
+**Több gyerek (1.2)³**
+
+19. Gyerek hozzáadható és törölhető; legalább 1, legfeljebb 4 gyerek van. 4 gyereknél a „+ Gyerek hozzáadása” gomb le van tiltva, és látszik mellette a magyarázat; 1 gyereknél nincs „Gyerek törlése” gomb.
+20. Az osztály- és tanszakválasztó mindig az aktív gyerek választását mutatja és módosítja; gyerekváltáskor a többi gyerek választása változatlan marad.
+21. 1 gyereknél az oldal az 1.1 szerint működik (a Gyerek sor kivételével). 2–4 gyereknél gyerekenként egy eredménykártya jelenik meg egymás alatt, mindegyik az 5.2–5.3 és a 4.6 szabályai szerint, a saját osztályára számolt Választható-jelöléssel.
+22. A keresztnév nem kötelező, legfeljebb 20 karakter, csak `localStorage`-ben tárolódik; az URL-ben és a hálózati kérésekben nem jelenik meg. Üres névnél a jelölés „{n}. gyerek”.
+23. A `?o=3.b&f=balett&gy=2&o2=5.a&f2=keramia` link más böngészőben is ugyanazt a két gyereket állítja vissza (nevek nélkül). Az 1.1-es `?o=…&f=…` link 1 gyerekként működik; hibás vagy tartományon kívüli `gy` nem okoz hibát.
+24. 2–4 gyereknél a „PDF/nyomtatás” csak akkor aktív, ha minden gyereknél ki van választva egy osztály. A mentett PDF egyetlen dokumentum, oldalanként két gyerekkel, a 14.4 tömör listájával (A4 fekvő, a 6.3 szabályaival); 3 vagy 4 gyereknél 2 oldal, kivéve ha egy blokk a 14.4 szerint egész oldalt kap. Szöveg nem vágódik le, és nincs 12 px-nél kisebb. A 9–10. pont (párbeszéd, kijelölhető szöveg, cím, szürkeárnyalat, négy böngésző, Ctrl+P) erre is teljesül.
 
 ---
 
@@ -501,6 +518,13 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 3. **PDF:** `print.css` és `print-view.js`, Választható-cellák, bizonytalan-jelölés; kézi ellenőrzés négy böngészőben.
 4. **Üzem:** deploy- és snapshot-workflow, `docs/manual-checks.md`, végső elfogadási lista.
 
+**1.2³:**
+
+5. **Több gyerek – állapot:** gyereklista (hozzáadás, törlés, aktív gyerek), URL (14.5), tárolás és az 1.1-es tárolt választás átvétele, tesztekkel. A meglévő tiszta függvények gyerekenként futnak.
+6. **Több gyerek – képernyő:** Gyerek sor, keresztnév-mező, egymás alatti eredménykártyák, közös PDF-gomb.
+7. **Több gyerek – PDF:** két gyerek oldalanként tömör listával (14.4), blokkonkénti méréssel és tartalékkal (tömörítés, egész oldal); kézi ellenőrzés négy böngészőben.
+8. **Több gyerek – dokumentáció:** `docs/manual-checks.md`, `docs/elfogadas.md`, README, szülői kézikönyv.
+
 ---
 
 ## 13. Nyitott pontok (fejlesztés közben lezárhatók, a megrendelő dönt)
@@ -510,3 +534,78 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 - **Hover állapotok:** nincsenek megtervezve. Javaslat: kijelöletlen chip hoverre `bg-page` kitöltés, kijelölt és elsődleges gomb hoverre #4E0B10.
 - **PDF-fájlnév:** a `document.title` adja; más konvenció nincs.
 - **Adatgazda:** ki tartja naprakészen a táblát félévente.
+
+**1.2³ (a 14. szakasz javasolt alapértelmezései; a megrendelő felülbírálhatja):**
+
+- **Fél oldal (lezárva):** a 6.4 rácsa fél oldalon nem fér el; több gyereknél a PDF a 14.4 tömör listáját használja (⁴).
+- **Törlés megerősítése:** a „Gyerek törlése” azonnal töröl, megerősítés és visszavonás nélkül (a választás pár kattintással visszaállítható).
+- **Aktív gyerek kiemelése a listában:** nincs; az aktív gyereket a Gyerek sor mutatja.
+- **Nevek a PDF címében:** a dokumentumcímbe (és így a javasolt fájlnévbe) bekerülnek a megadott keresztnevek (14.4). A fájl a szülő gépén marad, de ha továbbküldi, a nevek is mennek vele.
+
+³ A megrendelő döntése, 2026-10-18.
+
+---
+
+## 14. Új funkció 3 (1.2): több gyerek³
+
+### 14.1 Állapot
+
+- `children`: 1–4 gyerek, a felvétel sorrendjében. Gyerekenként: `class` és `disciplines` (az 5.1 szerint, egymástól függetlenül), valamint egy nem kötelező `name` (keresztnév, 14.6).
+- `active`: annak a gyereknek a sorszáma, akinek a választását a választókártya mutatja és módosítja.
+- A gyerek **jelölése** a keresztnév, ha meg van adva, különben „{n}. gyerek”, ahol n a gyerek mostani sorszáma.
+- Betöltéskor, URL és tárolt választás nélkül: 1 gyerek, az 5.4 alapállapotával. 1 gyereknél minden az 1.1 szerint működik, csak a Gyerek sor jelenik meg pluszban.
+
+### 14.2 Gyerek sor (a választókártya első sora)
+
+- Címke „Gyerek”, mellette a gyerekchipek a gyerekek sorrendjében, felirat a jelölés. Egyszeres választás, mint az osztálychipeknél (4.5 állapotai); a kijelölt az aktív gyerek.
+- **„+ Gyerek hozzáadása”** gomb a chipek után: új gyereket vesz fel „Összes” osztállyal és „Összes” tanszakkal, és ő lesz az aktív. 4 gyereknél natívan `disabled`, mellette (mobilon alatta) a megjegyzés: „Legfeljebb 4 gyerek adható meg.”
+- **„Gyerek törlése”** gomb: az aktív gyereket törli, csak 2 vagy több gyereknél látszik. Utána az előtte álló gyerek (ha nincs, az első) lesz az aktív. A névtelen gyerekek jelölése újraszámozódik.
+- **Keresztnév-mező** a Gyerek sor alatt, csak 2 vagy több gyereknél (1 gyereknél a név sehol nem jelenne meg; a megrendelő döntése, 2026-10-18): `<input type="text">`, címke „Keresztnév”, segédszöveg „nem kötelező · csak ezen az eszközön tárolódik”, legfeljebb 20 karakter. Az aktív gyerek nevét szerkeszti; a szélső szóközök levágódnak, az üres név = nincs név. A név a lapra csak `textContent`-tel kerül.
+- Az osztály- és a tanszakválasztó (4.5, 5.2) változatlan, de mindig az aktív gyerek választásán dolgozik.
+- Asztalin a Gyerek sor egy tördelődő chipsor, a gombokkal a végén; mobilon a chipek tördelődnek, a két gomb alattuk áll. A méretek és állapotok a 4.4–4.5 szerint; a gombok másodlagos stílusúak (`surface` kitöltés, 1.5 px `border-control` keret, `ink` felirat), minimum 44 px magasak.
+
+### 14.3 Eredmény több gyereknél
+
+- **1 gyerek:** a 4.5 szerinti eredménykártya, változatlanul.
+- **2–4 gyerek:**
+  - Felül egy összesítő sor: „{k} gyerek órarendje” (Fraunces 600, a H2 méretével, `brand-burgundy`) és a közös „PDF/nyomtatás” gomb (asztalin jobbra, mobilon alatta teljes szélességben, a 6.1 méreteivel).
+  - Alatta gyerekenként egy eredménykártya, a gyerekek sorrendjében, köztük a 4.1 szerinti rés (20 / 16 px). Minden kártya fejléce: H3 „{jelölés} – {cím}” (a cím az 5.3 szerint, pl. „Anna – 3.b osztály · Balett, Kerámia”), mellette a darabszám. A kártyán belül a lista a 4.5–4.6 szerint, a Választható-jelölés az adott gyerek osztályára számolva; üres választásnál a 4.5 üres állapota. A kártyákon nincs külön PDF-gomb.
+- Az időütközést két gyerek között az oldal nem jelzi.
+
+### 14.4 PDF több gyereknél
+
+- **Gomb (2–4 gyerek):** aktív, ha minden gyereknél ki van választva egy osztály; különben natívan `disabled`, a megjegyzés: „PDF/nyomtatás csak akkor érhető el, ha minden gyereknél ki van választva egy osztály.” Ctrl+P-re ilyenkor a lapon csak ez áll: „Válassz minden gyereknél egy osztályt a nyomtatáshoz.”
+- **1 gyerek:** a 6. szakasz szerint, változatlanul (egy teljes oldal).
+- **2–4 gyerek:** egyetlen nyomtatás, egyetlen PDF-dokumentum. Oldalanként két gyerek, egymás alatt, **tömör listában** (nem a 6.4 órarácsában)⁴; 3 gyereknél a 2. oldal alsó fele üres. A gyerekek sorrendje a képernyőé.
+- **Egy oldal felépítése** (A4 fekvő, a 6.3 szabályaival, 11.6 × 12.7 mm-es lapmargóval):
+  1. Levélfej a 6.4 szerint (az alatta lévő vonalig 8 px), oldalanként egyszer.
+  2. Két gyerekblokk egymás alatt, egyenlő magassággal, köztük 10 px és 1 px `border` vonal (a 2. oldal üres alsó fele: szaggatott #DCCBAE vonal, tartalom nélkül).
+  3. A „? = az adat pontosítás alatt” sor, ha az oldalon van bizonytalan bejegyzés, majd a lábléc a 6.4 szerint, oldalanként egyszer.
+  - A „MŰVÉSZETI ÓRAREND” szemöldöksor és a 28 px-es H1 több gyereknél elmarad; a blokkcímek veszik át a szerepüket.
+- **Egy gyerekblokk:**
+  - **Blokkcím:** „{jelölés} – {cím}” (Fraunces 600, 18 px, `brand-burgundy`), jobbra a darabszám („{n} foglalkozás hetente”, 12 px, `ink-muted-print`).
+  - **Naposzlopok:** öt egyenlő oszlop (Hétfő … Péntek), köztük 8 px. Oszlopfej: a nap neve (13 px, 700, `ink`), alatta 1.5 px `brand-burgundy` vonal. Óraoszlop és üres idősáv nincs: egy nap alatt csak a foglalkozásai állnak, időrendben (Első óra, majd a 4.5 szerinti sorrend), köztük 4 px. Foglalkozás nélküli napon egy „–” (12 px, `ink-muted-print`).
+  - **Bejegyzés:** tanszak-tint kitöltés, 1 px keret a pöttyszínnel, 6 px lekerekítés, padding 3 × 6 px. 1. sor: időpont (12 px, 700) és az órasorszám (12 px, `ink-muted-print`), pl. „14:45–16:00 8–9. óra”. 2. sor: tanszaknév (Fraunces 700, 14 px), bizonytalan sornál utána „?”. 3. sor: tanár és terem „ · ”-tal elválasztva (12 px); ami hiányzik, kimarad, ha mindkettő, a sor is.
+  - **Választható:** az egymással átfedő, a 4.6 szerint Választható bejegyzések egy csoportba kerülnek: fölöttük „VÁLASZTHATÓ” (12 px, 700, `accent-text`, betűköz 0.06em), bal oldalt 2 px `accent-text` vonal fogja össze őket, 6 px behúzással.
+- **Ha egy blokk nem fér el** fél oldalon: előbb tömörebb szedést kap (a bejegyzések közti rés 2 px, padding 2 × 6 px, a név 13 px; 12 px alá semmi nem megy); ha így sem fér el, az a gyerek egész oldalt kap (blokkja a teljes oldalmagasságot kitölti), és a következő gyerek a következő oldalon kezdődik. A tartalom sosem vágódik le. (A 2026-10-18-i adatban mind a 18 osztály elfér fél oldalon tömörítés nélkül is; a legszorosabb az 1.a, a hely kb. 90%-ával.)
+- **Dokumentumcím:** „Művészeti órarend – {jelölés1}, {jelölés2}…”, pl. „Művészeti órarend – Anna, 2. gyerek”. Az `afterprint` után a cím visszaáll.
+- **Olvasási sorrend:** levélfej → 1. blokk (cím, darabszám, napok hétfőtől, napon belül időrendben) → 2. blokk → jelmagyarázat → lábléc, oldalanként.
+
+⁴ A megrendelő döntése, 2026-10-18: a 6.4 órarácsa fél oldalon nem fér el (mérés: 5 órasorral egy sor kb. 45 px, a 112 kártyából 50 levágódna, mind a 18 osztály érintett), ezért több gyereknél a PDF tömör listát használ.
+
+### 14.5 URL és megjegyzett választás
+
+- **URL:** az 1. gyerek `o` és `f` (5.4, változatlan, így az 1.1-es linkek működnek). A 2–4. gyerek `o2`/`f2` … `o4`/`f4`, ugyanazzal a formátummal. A gyerekszám `gy` (2–4); 1 gyereknél nincs `gy`. Példa: `?o=3.b&f=balett&gy=2&o2=5.a&f2=keramia`.
+- Ha `gy` hiányzik vagy nem egész szám (pl. `gy=abc`, üres `gy=`), a gyerekszám a legnagyobb jelen lévő sorszám (pl. van `o3` → 3 gyerek, nincs semmi → 1); egész szám esetén a 4 fölötti `gy` 4-re, az 1 alatti 1-re korlátozódik; a `gy`-nél nagyobb sorszámú paraméterek figyelmen kívül maradnak. Ismeretlen osztály vagy kulcs nem okoz hibát (5.4).
+- **Az aktív gyerek és a nevek nem kerülnek az URL-be.** Megnyitáskor az 1. gyerek aktív.
+- **Tárolás:** új kulcs (`hunyadi-orarend-1.2`), `try/catch`-ben: gyerekek (osztály, tanszakok, név) és az aktív gyerek. Ha nincs, az 1.1-es tárolt választás az 1. gyerek lesz.
+- **Elsőbbség:** ha az URL-ben van gyerekre vonatkozó paraméter (`o`, `f`, `gy`, `o2`…), az URL adja a gyerekeket és a választásokat; a tárolt nevek sorszám szerint megmaradnak, legfeljebb a gyerekszámig.
+
+### 14.6 Adatvédelem
+
+- A keresztnév a szülő saját adata a saját eszközén: csak `localStorage`-ben él, az URL-be, a hálózati kérésekbe, a Sheetbe és a repóba nem kerül. Törlése: a mező kiürítése vagy a gyerek törlése.
+- A PDF dokumentumcímében és a javasolt fájlnévben megjelenik (14.4, 13).
+
+### 14.7 Ami az 1.2-ben sem készül
+
+Időütközés-jelzés (két gyerek között sem), a gyerekek óráit egy rácsba összevonó nézet, gyerekprofil szerveren vagy fiókban, 4-nél több gyerek, gyerekenként külön PDF-fájl.
