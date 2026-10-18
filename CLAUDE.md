@@ -18,7 +18,7 @@ Statikus weboldal a Hunyadi Mátyás Általános Iskola (Budapest XIII.) délut�
 - **Nincs npm-függőség, nincs build lépés, nincs bundler, nincs framework.** Natív HTML, CSS, ES modulok. Ne hozz létre `package.json`-t függőségekkel. Ha a tesztekhez vagy a scripthez `package.json` kell, csak `"type": "module"` és `scripts` lehet benne, `dependencies` és `devDependencies` nem.
 - **Nincs PDF-könyvtár** (jsPDF, pdfmake, html2canvas stb.). A PDF a `window.print()` és egy `@media print` stíluslap eredménye.
 - **Nincs külső hálózati kérés** a Google Sheets CSV-n és a Google Fonts-on kívül. Nincs analitika, nincs CDN-es script.
-- **Csak a `SPEC.md`-ben szereplő funkciók.** Ne adj hozzá a 1. szakasz „Nincs benne” listájáról semmit (több gyerek, időütközés, naptár, sötét mód, tanári nézet stb.), akkor sem, ha kézenfekvőnek tűnik. Ha valami hiányzik a specifikációból, kérdezz, ne találd ki.
+- **Csak a `SPEC.md`-ben szereplő funkciók.** Ne adj hozzá a 1. szakasz „Nincs benne” listájáról semmit (időütközés, összevont családi rács, 4-nél több gyerek, naptár, sötét mód, tanári nézet stb.), akkor sem, ha kézenfekvőnek tűnik. A több gyerek (legfeljebb 4) az 1.2-ben a `SPEC.md` 14. szakasza szerint készül. Ha valami hiányzik a specifikációból, kérdezz, ne találd ki.
 - **Az adatot ne javítsd csendben.** Érvénytelen sor → Adathibák panel. Ellentmondásos, de érvényes sor → `Bizonytalan = igen` a Sheetben, az oldal jelöli.
 - **A `docs/design/*.dc.html` mintaadatai nem igazak** (1.m–8.m, hét tanszak, 12:50-es kezdés, teljes tanárnevek). Csak a méreteket, színeket és elrendezést vedd át belőlük.
 - Minden UI-szöveg magyar, a `SPEC.md`-ben idézett pontos felirattal. Ne fordítsd, ne fogalmazd át.
@@ -33,6 +33,7 @@ Statikus weboldal a Hunyadi Mátyás Általános Iskola (Budapest XIII.) délut�
 - **Mobil osztályválasztó:** évfolyamonként tagolt sorok, az „Összes” legfelül (a `mobil.dc.html` ezt még nem mutatja – a `SPEC.md` az irányadó).
 - **URL-kulcsok:** slug, ékezet nélkül (SPEC 3.5). Ha az 1.0 kódban már van kulcsképzés, azt tartsd meg.
 - **Nyomtatás:** `beforeprint`-en is renderelj, mert a felhasználó Ctrl+P-vel is nyomtathat.
+- **Több gyerek (SPEC 14.):** 1 gyereknél minden az 1.1 szerint marad, az 1.1-es `?o=…&f=…` linkek is. A gyerek keresztneve csak `localStorage`-be kerülhet, URL-be és hálózatra soha.
 
 ## Kódstílus
 
