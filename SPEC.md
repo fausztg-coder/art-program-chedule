@@ -589,7 +589,7 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 ### 14.5 URL és megjegyzett választás
 
 - **URL:** az 1. gyerek `o` és `f` (5.4, változatlan, így az 1.1-es linkek működnek). A 2–4. gyerek `o2`/`f2` … `o4`/`f4`, ugyanazzal a formátummal. A gyerekszám `gy` (2–4); 1 gyereknél nincs `gy`. Példa: `?o=3.b&f=balett&gy=2&o2=5.a&f2=keramia`.
-- Ha `gy` hiányzik, a gyerekszám a legnagyobb jelen lévő sorszám (pl. van `o3` → 3 gyerek); hibás vagy 4 fölötti `gy` 4-re, 1 alatti 1-re korlátozódik; a `gy`-nél nagyobb sorszámú paraméterek figyelmen kívül maradnak. Ismeretlen osztály vagy kulcs nem okoz hibát (5.4).
+- Ha `gy` hiányzik vagy nem egész szám (pl. `gy=abc`, üres `gy=`), a gyerekszám a legnagyobb jelen lévő sorszám (pl. van `o3` → 3 gyerek, nincs semmi → 1); egész szám esetén a 4 fölötti `gy` 4-re, az 1 alatti 1-re korlátozódik; a `gy`-nél nagyobb sorszámú paraméterek figyelmen kívül maradnak. Ismeretlen osztály vagy kulcs nem okoz hibát (5.4).
 - **Az aktív gyerek és a nevek nem kerülnek az URL-be.** Megnyitáskor az 1. gyerek aktív.
 - **Tárolás:** új kulcs (`hunyadi-orarend-1.2`), `try/catch`-ben: gyerekek (osztály, tanszakok, név) és az aktív gyerek. Ha nincs, az 1.1-es tárolt választás az 1. gyerek lesz.
 - **Elsőbbség:** ha az URL-ben van gyerekre vonatkozó paraméter (`o`, `f`, `gy`, `o2`…), az URL adja a gyerekeket és a választásokat; a tárolt nevek sorszám szerint megmaradnak, legfeljebb a gyerekszámig.
