@@ -14,7 +14,7 @@ Minden pont mellett: mi ellenőrzi, és hol tart. **Autom.** = `node --test` (a 
 | 6 | `?o=3.b&f=balett,keramia` visszaállít; ismeretlen kulcs nem hiba | `selection.test.mjs`: URL round trip, unknown | E | ✔ |
 | 7 | Választható címke; bizonytalan sor jelölve képernyőn és PDF-ben, billentyűzettel elérhető | `selection.test.mjs`: Választható; `print.test.mjs`: overlaps, uncertain | F, J13–J14 | ✔ (Chromium); Safari/iOS kézi |
 | 8 | Mobilon évfolyamonkénti osztálysorok, „Összes” legfelül; asztalin egy sor | `state.test.mjs`: mobile class rows | B | ✔ |
-| 9 | PDF: nyomtatási párbeszéd, egy A4 fekvő oldal, 6.4 elrendezés, kijelölhető szöveg, cím, szürkeárnyalat | `print.test.mjs`: rács, cím | J1–J18 | ✔ Chromiumban (mind a 18 osztály egy oldal) |
+| 9 | PDF: nyomtatási párbeszéd, egy A4 fekvő oldal, 6.4 elrendezés, kijelölhető szöveg, cím, szürkeárnyalat | `print.test.mjs`: rács, cím | J1–J19 | ✔ Chromiumban (mind a 18 osztály egy oldal) |
 | 10 | 9. pont négy böngészőben; Ctrl+P is | – | J (négy böngésző) | ⏳ asztali Chrome ✔ (megrendelő), többi kézi |
 | 11 | Megjelenés 4.1–4.5 szerint, nincs átfedés, 768–1023 px asztali elrendezés görgetés nélkül | `static.test.mjs`: tokenek | G | ✔ |
 | 12 | 7. szakasz (akadálymentesség) | `static.test.mjs`: `lang`, szövegek | H | ✔ (axe 0 hiba, Lighthouse 100); képernyőolvasó kézi |
