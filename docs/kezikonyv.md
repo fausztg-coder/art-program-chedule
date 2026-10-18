@@ -8,7 +8,7 @@ Telefonon és számítógépen is működik, nem kell hozzá regisztráció vagy
 
 ## 1. Válaszd ki a gyermeked osztályát
 
-Az oldal tetején az **Osztály** sorban koppints a gyermeked osztályára (pl. 4.a). Telefonon az osztályok évfolyamonként külön sorban állnak. Az **Összes** gomb az összes osztály foglalkozását mutatja.
+Az oldal tetején az **Osztály** sorban koppints a gyermeked osztályára (pl. 4.a). Telefonon az osztályok évfolyamonként külön sorban állnak. Az **Összes** gomb az összes osztály foglalkozását mutatja. (A legfelső, **Gyerek** sorral csak akkor kell foglalkoznod, ha több gyereked van – lásd az 5. pontot.)
 
 ![Az oldal telefonon, megnyitás után](kezikonyv/1-kezdes-mobil.png)
 
@@ -48,9 +48,21 @@ Tipp: ha a lap tetején vagy alján webcím és dátum is megjelenik, a nyomtat�
 
 ![A kész PDF-oldal](kezikonyv/7-pdf-4a.png)
 
+## 5. Több gyereked van?
+
+Legfeljebb négy gyerek órarendjét nézheted egyszerre. A **Gyerek** sorban koppints a **+ Gyerek hozzáadása** gombra: megjelenik a „2. gyerek”, és az Osztály és Tanszak sor most már az ő választását állítja. A gyerekek között a nevükre koppintva válthatsz; mindegyik megtartja a saját osztályát és tanszakait.
+
+A **Keresztnév** mezőbe beírhatod a gyerek nevét (nem kötelező) – ez csak a te telefonodon vagy gépeden marad, sehová nem küldjük el. A **Gyerek törlése** a kiválasztott gyereket veszi ki.
+
+![Két gyerek a Gyerek sorban, névvel](kezikonyv/8-tobb-gyerek-mobil.png)
+
+Alatta a gyerekek órarendje egymás alatt látszik. A **PDF/nyomtatás** gomb akkor működik, ha minden gyereknél kiválasztottál osztályt; ekkor egyetlen PDF készül, oldalanként két gyerekkel, napok szerinti tömör listában.
+
+![Két gyerek órarendje egy PDF-oldalon](kezikonyv/9-pdf-ket-gyerek.png)
+
 ## Jó tudni
 
 - **A választás megmarad:** az oldal megjegyzi, mit választottál legutóbb, így legközelebb ugyanazt látod.
-- **Megosztható link:** a böngésző címsorában lévő cím a választásodat is tartalmazza (pl. …`?o=4.a&f=balett`). Ha ezt elküldöd, a másik szülő ugyanazt a nézetet látja.
+- **Megosztható link:** a böngésző címsorában lévő cím a választásodat is tartalmazza (pl. …`?o=4.a&f=balett`). Ha ezt elküldöd, a másik szülő ugyanazt a nézetet látja – több gyereknél is, de a beírt nevek nélkül.
 - **Sárga sáv „Az órarend nem frissült…”:** az oldal éppen nem érte el az iskola táblázatát, ezért a legutóbbi mentett állapotot mutatja a jelzett dátummal. Később töltsd újra az oldalt.
 - **Kérdés vagy hiba:** az órarend tartalmával kapcsolatban az iskolát keresd.

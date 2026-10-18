@@ -1,6 +1,6 @@
 # Hunyadi művészeti órarend
 
-A Hunyadi Mátyás Általános Iskola délutáni művészeti foglalkozásainak heti órarendje. A szülő kiválaszt egy osztályt (vagy az „Összes”-t) és egy vagy több tanszakot, és napok szerint csoportosított listában látja az órákat; egy osztály listáját a böngésző nyomtatásával A4-es PDF-be mentheti. Az adatot az iskola egy Google Táblázatban szerkeszti; az oldal ezt olvassa, és ha nem éri el, a repóban tárolt utolsó jó pillanatképet (`data/snapshot.json`) mutatja.
+A Hunyadi Mátyás Általános Iskola délutáni művészeti foglalkozásainak heti órarendje. A szülő kiválaszt egy osztályt (vagy az „Összes”-t) és egy vagy több tanszakot, és napok szerint csoportosított listában látja az órákat; egy osztály listáját a böngésző nyomtatásával A4-es PDF-be mentheti. Több gyereknél (legfeljebb 4, SPEC 1.2) gyerekenként választ, a listák egymás alatt jelennek meg, és egy közös PDF készül, oldalanként két gyerekkel; a gyerek keresztneve (nem kötelező) csak a szülő böngészőjében tárolódik. Az adatot az iskola egy Google Táblázatban szerkeszti; az oldal ezt olvassa, és ha nem éri el, a repóban tárolt utolsó jó pillanatképet (`data/snapshot.json`) mutatja.
 
 ## Táblázat bekötése
 
@@ -40,7 +40,8 @@ A közzétett CSV-ket a böngésző közvetlenül tölti le a Google-tól (CORS)
 | `index.html`, `css/tokens.css`, `css/app.css` | a képernyős oldal (SPEC 4.) |
 | `css/print.css`, `src/print-view.js` | a PDF-oldal (SPEC 6.) |
 | `src/csv.js`, `src/model.js` | CSV-elemzés, validálás, célzás, színek |
-| `src/state.js` | választás, szűrés, cím, Választható, URL, nyomtatási rács, szótagolás (tiszta függvények) |
+| `src/state.js` | választás, szűrés, cím, Választható, URL, nyomtatási rács és tömör lista, szótagolás (tiszta függvények) |
+| `src/children.js` | több gyerek: gyereklista, jelölés, PDF-oldalak, URL (`gy`, `o2`…) és tárolás (tiszta függvények, SPEC 1.2) |
 | `src/load.js` | letöltés, időkorlát, tartalék a pillanatképre |
 | `src/render.js`, `src/main.js`, `src/dom.js` | DOM és eseménykezelés |
 | `scripts/snapshot.mjs` | az éjszakai pillanatkép (ugyanazzal a validálóval) |
