@@ -1,8 +1,8 @@
 # Művészeti órarend-kereső – 1.1 specifikáció
 
-Verzió: 1.2 (tervezet) · 2026-10-18 · Hunyadi Mátyás Általános Iskola (Budapest XIII.), délutáni művészeti foglalkozások
+Verzió: 1.2 · 2026-10-18 · Hunyadi Mátyás Általános Iskola (Budapest XIII.), délutáni művészeti foglalkozások
 
-> **1.2-es tervezet.** Az 1.1-hez képest egyetlen új funkció: több gyerek (legfeljebb 4) választása és közös PDF-je, lásd a 14. szakaszt. A többi szakasz az 1.1 szerint érvényes; ahol a 14. szakasz eltér tőlük, ott a 14. az irányadó. Az 1.2 változásait ³ jelöli.
+> **1.2.** Az 1.1-hez képest egyetlen új funkció: több gyerek (legfeljebb 4) választása és közös PDF-je, lásd a 14. szakaszt. A többi szakasz az 1.1 szerint érvényes; ahol a 14. szakasz eltér tőlük, ott a 14. az irányadó. Az 1.2 változásait ³ jelöli.
 
 Ez a fájl önmagában teljes. A forrásdokumentumok (1.0 specifikáció, dizájnspecifikáció, 1.1 specifikáció, v3 dizájn canvas) claude.ai-on élnek; minden, ami a fejlesztéshez kell, ide van átemelve. A vizuális referencia a `docs/design/` mappa három `.dc.html` fájlja (lásd 9. szakasz).
 
@@ -542,7 +542,7 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 - **Aktív gyerek kiemelése a listában:** nincs; az aktív gyereket a Gyerek sor mutatja.
 - **Nevek a PDF címében:** a dokumentumcímbe (és így a javasolt fájlnévbe) bekerülnek a megadott keresztnevek (14.4). A fájl a szülő gépén marad, de ha továbbküldi, a nevek is mennek vele.
 
-³ A megrendelő döntése, 2026-10-18 (tervezet, jóváhagyásra vár).
+³ A megrendelő döntése, 2026-10-18.
 
 ---
 
