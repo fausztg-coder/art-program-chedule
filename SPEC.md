@@ -461,7 +461,7 @@ Az 1.1 akkor kész, ha mind teljesül. Mindegyikhez tartozzon automatizált tesz
 21. 1 gyereknél az oldal az 1.1 szerint működik (a Gyerek sor kivételével). 2–4 gyereknél gyerekenként egy eredménykártya jelenik meg egymás alatt, mindegyik az 5.2–5.3 és a 4.6 szabályai szerint, a saját osztályára számolt Választható-jelöléssel.
 22. A keresztnév nem kötelező, legfeljebb 20 karakter, csak `localStorage`-ben tárolódik; az URL-ben és a hálózati kérésekben nem jelenik meg. Üres névnél a jelölés „{n}. gyerek”.
 23. A `?o=3.b&f=balett&gy=2&o2=5.a&f2=keramia` link más böngészőben is ugyanazt a két gyereket állítja vissza (nevek nélkül). Az 1.1-es `?o=…&f=…` link 1 gyerekként működik; hibás vagy tartományon kívüli `gy` nem okoz hibát.
-24. 2–4 gyereknél a „PDF/nyomtatás” csak akkor aktív, ha minden gyereknél ki van választva egy osztály. A mentett PDF egyetlen dokumentum, oldalanként két gyerekkel (A4 fekvő, a 14.4 elrendezésével, a 6.3 szabályaival); 3 vagy 4 gyereknél 2 oldal. A 9–10. pont (párbeszéd, kijelölhető szöveg, cím, szürkeárnyalat, négy böngésző, Ctrl+P) erre is teljesül.
+24. 2–4 gyereknél a „PDF/nyomtatás” csak akkor aktív, ha minden gyereknél ki van választva egy osztály. A mentett PDF egyetlen dokumentum, oldalanként két gyerekkel, a 14.4 tömör listájával (A4 fekvő, a 6.3 szabályaival); 3 vagy 4 gyereknél 2 oldal, kivéve ha egy blokk a 14.4 szerint egész oldalt kap. Szöveg nem vágódik le, és nincs 12 px-nél kisebb. A 9–10. pont (párbeszéd, kijelölhető szöveg, cím, szürkeárnyalat, négy böngésző, Ctrl+P) erre is teljesül.
 
 ---
 
@@ -522,7 +522,7 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 
 5. **Több gyerek – állapot:** gyereklista (hozzáadás, törlés, aktív gyerek), URL (14.5), tárolás és az 1.1-es tárolt választás átvétele, tesztekkel. A meglévő tiszta függvények gyerekenként futnak.
 6. **Több gyerek – képernyő:** Gyerek sor, keresztnév-mező, egymás alatti eredménykártyák, közös PDF-gomb.
-7. **Több gyerek – PDF:** két gyerek oldalanként (14.4), illesztés blokkonként; kézi ellenőrzés négy böngészőben.
+7. **Több gyerek – PDF:** két gyerek oldalanként tömör listával (14.4), blokkonkénti méréssel és tartalékkal (tömörítés, egész oldal); kézi ellenőrzés négy böngészőben.
 8. **Több gyerek – dokumentáció:** `docs/manual-checks.md`, `docs/elfogadas.md`, README, szülői kézikönyv.
 
 ---
@@ -537,7 +537,7 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 
 **1.2³ (a 14. szakasz javasolt alapértelmezései; a megrendelő felülbírálhatja):**
 
-- **Fél oldal elég-e:** fél A4 fekvő magasságban egy egyórás, Választható (két sávos) kártya a legtömörebb szedéssel is szoros. Ha a 7. mérföldkő mérésén egy valós osztály így sem fér el, a megrendelő dönt: gyerekenként egy oldal, vagy ismert korlát.
+- **Fél oldal (lezárva):** a 6.4 rácsa fél oldalon nem fér el; több gyereknél a PDF a 14.4 tömör listáját használja (⁴).
 - **Törlés megerősítése:** a „Gyerek törlése” azonnal töröl, megerősítés és visszavonás nélkül (a választás pár kattintással visszaállítható).
 - **Aktív gyerek kiemelése a listában:** nincs; az aktív gyereket a Gyerek sor mutatja.
 - **Nevek a PDF címében:** a dokumentumcímbe (és így a javasolt fájlnévbe) bekerülnek a megadott keresztnevek (14.4). A fájl a szülő gépén marad, de ha továbbküldi, a nevek is mennek vele.
@@ -576,15 +576,22 @@ Ha a repóban már van 1.0 kód, annak szerkezete marad; a fenti csak irány.
 
 - **Gomb (2–4 gyerek):** aktív, ha minden gyereknél ki van választva egy osztály; különben natívan `disabled`, a megjegyzés: „PDF/nyomtatás csak akkor érhető el, ha minden gyereknél ki van választva egy osztály.” Ctrl+P-re ilyenkor a lapon csak ez áll: „Válassz minden gyereknél egy osztályt a nyomtatáshoz.”
 - **1 gyerek:** a 6. szakasz szerint, változatlanul (egy teljes oldal).
-- **2–4 gyerek:** egyetlen nyomtatás, egyetlen PDF-dokumentum. Oldalanként két gyerek, egymás alatt; 3 gyereknél a 2. oldal alsó fele üres. A gyerekek sorrendje a képernyőé.
-- **Egy oldal felépítése** (A4 fekvő, a 6.3 szabályaival, a 6.4 margóival):
-  1. Levélfej a 6.4 szerint, oldalanként egyszer.
-  2. Két gyerekblokk egymás alatt, egyenlő magassággal, köztük 14 px. Egy blokk: blokkcím „{jelölés} – {cím}” (Fraunces 600, 18 px, `brand-burgundy`), jobbra a darabszám (12 px, `ink-muted-print`); alatta a rács a 6.4 oszlopaival és sorszabályaival, a blokk maradék magasságában.
-  3. Lábléc a 6.4 szerint, oldalanként egyszer; a „? = az adat pontosítás alatt” sor akkor jelenik meg, ha az oldalon van bizonytalan kártya.
+- **2–4 gyerek:** egyetlen nyomtatás, egyetlen PDF-dokumentum. Oldalanként két gyerek, egymás alatt, **tömör listában** (nem a 6.4 órarácsában)⁴; 3 gyereknél a 2. oldal alsó fele üres. A gyerekek sorrendje a képernyőé.
+- **Egy oldal felépítése** (A4 fekvő, a 6.3 szabályaival, 11.6 × 12.7 mm-es lapmargóval):
+  1. Levélfej a 6.4 szerint (az alatta lévő vonalig 8 px), oldalanként egyszer.
+  2. Két gyerekblokk egymás alatt, egyenlő magassággal, köztük 10 px és 1 px `border` vonal (a 2. oldal üres alsó fele: szaggatott #DCCBAE vonal, tartalom nélkül).
+  3. A „? = az adat pontosítás alatt” sor, ha az oldalon van bizonytalan bejegyzés, majd a lábléc a 6.4 szerint, oldalanként egyszer.
   - A „MŰVÉSZETI ÓRAREND” szemöldöksor és a 28 px-es H1 több gyereknél elmarad; a blokkcímek veszik át a szerepüket.
-- **Kártyák:** a 6.4 szabályai (Választható-sávok, szótaghatáros törés, kétlépcsős tömörítés, 12 px minimum) blokkonként mérve.
+- **Egy gyerekblokk:**
+  - **Blokkcím:** „{jelölés} – {cím}” (Fraunces 600, 18 px, `brand-burgundy`), jobbra a darabszám („{n} foglalkozás hetente”, 12 px, `ink-muted-print`).
+  - **Naposzlopok:** öt egyenlő oszlop (Hétfő … Péntek), köztük 8 px. Oszlopfej: a nap neve (13 px, 700, `ink`), alatta 1.5 px `brand-burgundy` vonal. Óraoszlop és üres idősáv nincs: egy nap alatt csak a foglalkozásai állnak, időrendben (Első óra, majd a 4.5 szerinti sorrend), köztük 4 px. Foglalkozás nélküli napon egy „–” (12 px, `ink-muted-print`).
+  - **Bejegyzés:** tanszak-tint kitöltés, 1 px keret a pöttyszínnel, 6 px lekerekítés, padding 3 × 6 px. 1. sor: időpont (12 px, 700) és az órasorszám (12 px, `ink-muted-print`), pl. „14:45–16:00 8–9. óra”. 2. sor: tanszaknév (Fraunces 700, 14 px), bizonytalan sornál utána „?”. 3. sor: tanár és terem „ · ”-tal elválasztva (12 px); ami hiányzik, kimarad, ha mindkettő, a sor is.
+  - **Választható:** az egymással átfedő, a 4.6 szerint Választható bejegyzések egy csoportba kerülnek: fölöttük „VÁLASZTHATÓ” (12 px, 700, `accent-text`, betűköz 0.06em), bal oldalt 2 px `accent-text` vonal fogja össze őket, 6 px behúzással.
+- **Ha egy blokk nem fér el** fél oldalon: előbb tömörebb szedést kap (a bejegyzések közti rés 2 px, padding 2 × 6 px, a név 13 px; 12 px alá semmi nem megy); ha így sem fér el, az a gyerek egész oldalt kap (blokkja a teljes oldalmagasságot kitölti), és a következő gyerek a következő oldalon kezdődik. A tartalom sosem vágódik le. (A 2026-10-18-i adatban mind a 18 osztály elfér fél oldalon tömörítés nélkül is; a legszorosabb az 1.a, a hely kb. 90%-ával.)
 - **Dokumentumcím:** „Művészeti órarend – {jelölés1}, {jelölés2}…”, pl. „Művészeti órarend – Anna, 2. gyerek”. Az `afterprint` után a cím visszaáll.
-- **Olvasási sorrend:** levélfej → 1. blokk (cím, rács naponként) → 2. blokk → lábléc, oldalanként.
+- **Olvasási sorrend:** levélfej → 1. blokk (cím, darabszám, napok hétfőtől, napon belül időrendben) → 2. blokk → jelmagyarázat → lábléc, oldalanként.
+
+⁴ A megrendelő döntése, 2026-10-18: a 6.4 órarácsa fél oldalon nem fér el (mérés: 5 órasorral egy sor kb. 45 px, a 112 kártyából 50 levágódna, mind a 18 osztály érintett), ezért több gyereknél a PDF tömör listát használ.
 
 ### 14.5 URL és megjegyzett választás
 
