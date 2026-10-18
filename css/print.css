@@ -1,6 +1,8 @@
-/* Print page (SPEC 1.1 §6.3–6.4), after docs/design/pdf-a4-fekvo.dc.html:
-   one A4 landscape page; the screen interface is hidden. The page's own rules
-   (.print-page, .pp-*) apply to every medium: on screen the page is hidden
+/* Print pages (SPEC 1.1 §6.3–6.4, SPEC 1.2 §14.4), after
+   docs/design/pdf-a4-fekvo.dc.html: A4 landscape sheets (.pp-sheet) in
+   .print-page; the screen interface is hidden. One child: one sheet with the
+   timetable grid. 2–4 children: two children per sheet in a compact list.
+   These rules apply to every medium: on screen .print-page is hidden
    (css/app.css), except for the moment src/print-view.js lays it out off
    screen to measure what fits. */
 
@@ -9,22 +11,23 @@
 @media print {
   html, body { background: #fff; }
   body > :not(.print-page) { display: none !important; }
-  .print-page { display: flex !important; }
+  .print-page { display: block !important; }
 }
 
 .print-page, .print-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-/* The full width of the page area, and the height of an A4 landscape page
-   area (210 mm minus the margins), a little short of it so rounding never
-   pushes the page onto a second sheet. On other paper the page stays one
-   sheet and is not cut off at the right edge, but its cards get narrower. */
-.print-page {
-  flex-direction: column; gap: 14px;
+.print-page { background: #fff; color: var(--ink); font-family: var(--font-ui); }
+/* A sheet: the full width of the page area, and the height of an A4
+   landscape page area (210 mm minus the margins), a little short of it so
+   rounding never pushes a sheet onto a second page. On other paper a sheet
+   stays one page and is not cut off at the right edge, but gets narrower. */
+.pp-sheet {
+  display: flex; flex-direction: column; gap: 14px;
   width: 100%; height: 186mm; overflow: hidden; break-inside: avoid;
-  background: #fff; color: var(--ink); font-family: var(--font-ui);
 }
+.pp-sheet:not(:last-child) { break-after: page; }
 /* Off-screen layout at the A4 page area's width, for print-view.js to
    measure; it is never painted (the class is removed in the same task). */
-.print-page.pp-measuring { display: flex; position: fixed; top: 0; left: -10000px; width: 271.6mm; visibility: hidden; }
+.print-page.pp-measuring { display: block; position: fixed; top: 0; left: -10000px; width: 271.6mm; visibility: hidden; }
 
 /* 1. Letterhead */
 .pp-letterhead { flex: none; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid var(--brand-burgundy); font-size: 13px; }
@@ -109,6 +112,35 @@
 /* 4. Footer */
 .pp-legend, .pp-footer { flex: none; font-size: 12px; color: var(--ink-muted-print); }
 .pp-legend { margin-bottom: -8px; } /* the legend sits right above the footer */
+
+/* 2–4 children (SPEC 1.2 §14.4): two blocks per sheet, each a compact list
+   in five day columns, with no hour column and no empty slots. */
+.pp-compact { gap: 10px; }
+.pp-compact .pp-letterhead { padding-bottom: 8px; }
+.pp-block { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.pp-block + .pp-block { padding-top: 8px; border-top: 1px solid var(--border); }
+.pp-block.pp-spare { border-top-style: dashed; border-color: var(--print-empty-slot); }
+.pp-block-head { flex: none; display: flex; align-items: baseline; gap: 12px; }
+.pp-block-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.15; color: var(--brand-burgundy); }
+.pp-block-count { margin-left: auto; flex: none; font-size: 12px; color: var(--ink-muted-print); }
+.pp-cols { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.pp-col { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.pp-col-day { margin: 0; padding-bottom: 2px; border-bottom: 1.5px solid var(--brand-burgundy); font-size: 13px; font-weight: 700; color: var(--ink); }
+.pp-entry { display: flex; flex-direction: column; padding: 3px 6px 4px; border: 1px solid var(--dot); border-radius: 6px; background: var(--tint); color: var(--ink); }
+.pp-entry-time { font-size: 12px; font-weight: 700; line-height: 1.25; }
+.pp-entry-lessons { font-weight: 400; color: var(--ink-muted-print); }
+.pp-entry-name { font-family: var(--font-display); font-weight: 700; font-size: 14px; line-height: 1.15; overflow-wrap: anywhere; }
+.pp-entry-meta { font-size: 12px; line-height: 1.2; overflow-wrap: anywhere; }
+/* Overlapping Választható entries: one group, labelled once, held together by a line. */
+.pp-group { display: flex; flex-direction: column; gap: 3px; padding-left: 6px; border-left: 2px solid var(--accent-text); }
+.pp-group-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.1; color: var(--accent-text); }
+.pp-none { font-size: 12px; color: var(--ink-muted-print); }
+.pp-compact .pp-legend { margin-bottom: -6px; }
+/* A block that does not fit half a page: first tighter (nothing below 12 px),
+   then a page of its own (print-view.js). */
+.pp-block-tight .pp-col, .pp-block-tight .pp-group { gap: 2px; }
+.pp-block-tight .pp-entry { padding: 2px 6px; }
+.pp-block-tight .pp-entry-name { font-size: 13px; line-height: 1.1; }
 
 /* "Összes": no timetable to print (§6.2) */
 .pp-message { font-size: 16px; color: var(--ink); }

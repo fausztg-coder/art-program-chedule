@@ -13,6 +13,7 @@ import {
   familyPrintTitle,
   familyQuery,
   newFamily,
+  paginate,
   readFamilyQuery,
   removeChild,
   resolveFamily,
@@ -178,4 +179,18 @@ test("stored family: bad or foreign values are dropped without error", () => {
   );
   assert.deepEqual(resolveFamily(sample, { stored: { children: [] }, legacy: "garbage" }), newFamily());
   assert.deepEqual(resolveFamily(sample, { stored: "garbage" }), newFamily());
+});
+
+// ---------------------------------------------------------------------------
+// PDF pages (§14.4)
+
+test("pages: two children per page; a child that needs a whole page stands alone", () => {
+  assert.deepEqual(paginate([false]), [[0]]);
+  assert.deepEqual(paginate([false, false]), [[0, 1]]);
+  assert.deepEqual(paginate([false, false, false]), [[0, 1], [2]]);
+  assert.deepEqual(paginate([false, false, false, false]), [[0, 1], [2, 3]]);
+  assert.deepEqual(paginate([false, true, false, false]), [[0], [1], [2, 3]]);
+  assert.deepEqual(paginate([true, false, false]), [[0], [1, 2]]);
+  assert.deepEqual(paginate([false, false, true, false]), [[0, 1], [2], [3]]);
+  assert.deepEqual(paginate([true, true]), [[0], [1]]);
 });

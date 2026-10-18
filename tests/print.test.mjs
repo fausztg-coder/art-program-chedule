@@ -1,8 +1,8 @@
-// SPEC 1.1 §6: the print page's grid and title (pure logic; the page itself is
+// SPEC 1.1 §6 and 1.2 §14.4: the print page's grid, compact list and title (pure logic; the page itself is
 // checked by hand, docs/manual-checks.md J).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { printLayout, printTitle, SOFT_HYPHEN, softHyphenate } from "../src/state.js";
+import { printLayout, printList, printTitle, SOFT_HYPHEN, softHyphenate } from "../src/state.js";
 import { buildOk, row, withActivities } from "./helpers.mjs";
 
 const sel = (cls, ...disciplines) => ({ cls, disciplines });
@@ -184,4 +184,67 @@ test("softHyphenate leaves words of at most `longerThan` characters alone", () =
   // A word is a run without spaces: its letter runs break even if each is short.
   assert.equal(shown("a/1./kerámia", 10), "a/1./ke-rá-mia");
   assert.equal(shown("a/1./kerámia", 12), "a/1./kerámia");
+});
+
+// ---------------------------------------------------------------------------
+// Compact list of one child for the two-per-page PDF (SPEC 1.2 §14.4)
+
+// A day of the compact list as [[choice, activities…], …].
+const parts = (list, key) => list.days.find((d) => d.day.key === key).parts.map((p) => [p.choice, ...p.items.map((i) => i.activity)]);
+
+test("compact list: every day in order, empty days too; items in list order", () => {
+  const m = model(
+    row({ Nap: "Szerda", "Első óra": "9", "Utolsó óra": "9", Foglalkozás: "Néptánc", Célcsoport: "4" }),
+    row({ Nap: "Szerda", "Első óra": "7", "Utolsó óra": "8", Foglalkozás: "Balett", Célcsoport: "4.a" }),
+    row({ Nap: "Hétfő", Foglalkozás: "Kerámia", Célcsoport: "4" }),
+  );
+  const list = printList(m, sel("4.a"));
+  assert.deepEqual(list.days.map((d) => d.day.key), ["H", "K", "Sz", "Cs", "P"]);
+  assert.deepEqual(parts(list, "H"), [[false, "Kerámia"]]);
+  assert.deepEqual(parts(list, "K"), []);
+  assert.deepEqual(parts(list, "Sz"), [[false, "Balett"], [false, "Néptánc"]]);
+  assert.equal(list.count, 3);
+});
+
+test("compact list: overlapping Választható items form one group (4.a and 5.a, Tuesday)", () => {
+  const a = model(
+    row({ Nap: "Kedd", "Első óra": "8", "Utolsó óra": "9", Foglalkozás: "Modern tánc", Célcsoport: "4,5" }),
+    row({ Nap: "Kedd", "Első óra": "9", "Utolsó óra": "9", Foglalkozás: "Képzőművészet", Célcsoport: "4" }),
+    row({ Nap: "Kedd", "Első óra": "10", "Utolsó óra": "10", Foglalkozás: "Képzőművészet", Célcsoport: "4" }),
+  );
+  assert.deepEqual(parts(printList(a, sel("4.a")), "K"), [[true, "Modern tánc", "Képzőművészet"], [false, "Képzőművészet"]]);
+  const b = model(
+    row({ Nap: "Kedd", "Első óra": "7", "Utolsó óra": "7", Foglalkozás: "Néptánc", Célcsoport: "5" }),
+    row({ Nap: "Kedd", "Első óra": "7", "Utolsó óra": "8", Foglalkozás: "Kerámia", Célcsoport: "5" }),
+    row({ Nap: "Kedd", "Első óra": "8", "Utolsó óra": "9", Foglalkozás: "Modern tánc", Célcsoport: "5" }),
+  );
+  assert.deepEqual(parts(printList(b, sel("5.a")), "K"), [[true, "Néptánc", "Kerámia", "Modern tánc"]], "a chain is one group");
+});
+
+test("compact list: back-to-back items are no group; two groups on one day stay apart", () => {
+  const m = model(
+    row({ Nap: "Csütörtök", "Első óra": "7", "Utolsó óra": "7", Foglalkozás: "Balett", Célcsoport: "2" }),
+    row({ Nap: "Csütörtök", "Első óra": "7", "Utolsó óra": "7", Foglalkozás: "Kerámia", Célcsoport: "2" }),
+    row({ Nap: "Csütörtök", "Első óra": "8", "Utolsó óra": "8", Foglalkozás: "Néptánc", Célcsoport: "2" }),
+    row({ Nap: "Csütörtök", "Első óra": "9", "Utolsó óra": "10", Foglalkozás: "Robotika", Célcsoport: "2" }),
+    row({ Nap: "Csütörtök", "Első óra": "10", "Utolsó óra": "10", Foglalkozás: "Balett", Célcsoport: "2" }),
+  );
+  assert.deepEqual(parts(printList(m, sel("2.a")), "Cs"), [
+    [true, "Balett", "Kerámia"],
+    [false, "Néptánc"],
+    [true, "Robotika", "Balett"],
+  ]);
+});
+
+test("compact list: the discipline filter comes first; uncertain and Összes", () => {
+  const m = model(
+    row({ Nap: "Kedd", "Első óra": "8", "Utolsó óra": "9", Foglalkozás: "Modern tánc", Célcsoport: "4" }),
+    row({ Nap: "Kedd", "Első óra": "9", "Utolsó óra": "9", Foglalkozás: "Képzőművészet", Célcsoport: "4", Bizonytalan: "igen", Megjegyzés: "x" }),
+  );
+  assert.deepEqual(parts(printList(m, sel("4.a", "modern-tanc")), "K"), [[false, "Modern tánc"]]);
+  assert.equal(printList(m, sel("4.a", "modern-tanc")).uncertain, false);
+  assert.equal(printList(m, sel("4.a")).uncertain, true);
+  const all = printList(m, sel(null));
+  assert.equal(all.count, 0);
+  assert.ok(all.days.every((d) => d.parts.length === 0));
 });

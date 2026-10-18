@@ -111,6 +111,12 @@ test("index.html carries the exact SPEC copy", () => {
   }
   const heads = [...INDEX.matchAll(/<span>([A-ZÁÉÍÓÖŐÚÜŰ]+)<\/span>/g)].map((m) => m[1]).join(" · ");
   assert.ok(SPEC.includes(`„${heads}”`), `column headings: ${heads}`);
+  // The print pages' copy (SPEC 1.1 §6, 1.2 §14.4), in src/print-view.js.
+  const printView = read("src/print-view.js");
+  for (const text of ["Válassz egy osztályt a nyomtatáshoz.", "Válassz minden gyereknél egy osztályt a nyomtatáshoz.", "VÁLASZTHATÓ", "? = az adat pontosítás alatt"]) {
+    assert.ok(SPEC.includes(text), `not in SPEC.md: ${text}`);
+    assert.ok(printView.includes(text), `not in src/print-view.js: ${text}`);
+  }
   // Kept from 1.0 (docs/archive/SPEC-1.0.md).
   assert.ok(INDEX.includes("Az órarend most nem tölthető be. Próbáld újra később."));
   assert.ok(INDEX.includes('<html lang="hu">'));

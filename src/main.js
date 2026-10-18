@@ -91,8 +91,7 @@ function render(focusTo = null) {
   } else {
     renderResults(resultElements(), model, sel, openNotes);
   }
-  // Until milestone 7 the print page shows the active child only.
-  renderPrintPage($("printPage"), model, sel);
+  renderPrintPage($("printPage"), model, family);
   saveFamily(family);
   if (focus) document.querySelector(focus)?.focus();
 }
@@ -149,7 +148,7 @@ let screenTitle = null;
 
 function beforePrint() {
   if (!model) return;
-  renderPrintPage($("printPage"), model, activeChild(family));
+  renderPrintPage($("printPage"), model, family);
   if (screenTitle === null) screenTitle = document.title;
   document.title = canPrintFamily(family) ? familyPrintTitle(model, family) : screenTitle;
 }
@@ -167,7 +166,7 @@ function afterPrint() {
 
 // The print page is measured to fit (print-view.js); once the web fonts are
 // in, measure again with them.
-document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, activeChild(family)));
+document.fonts?.ready.then(() => model && renderPrintPage($("printPage"), model, family));
 
 window.addEventListener("beforeprint", beforePrint);
 window.addEventListener("afterprint", afterPrint);

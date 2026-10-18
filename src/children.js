@@ -74,6 +74,29 @@ export function familyPrintTitle(model, family) {
   return `Művészeti órarend – ${family.children.map((_, i) => childLabel(family, i)).join(", ")}`;
 }
 
+// PDF pages (§14.4): two children per page, in their order; a child whose
+// block does not fit half a page (full[i]) has a page of its own.
+// [false, true, false, false] → [[0], [1], [2, 3]]
+export function paginate(full) {
+  const pages = [];
+  let page = [];
+  full.forEach((whole, i) => {
+    if (whole) {
+      if (page.length) pages.push(page);
+      pages.push([i]);
+      page = [];
+      return;
+    }
+    page.push(i);
+    if (page.length === 2) {
+      pages.push(page);
+      page = [];
+    }
+  });
+  if (page.length) pages.push(page);
+  return pages;
+}
+
 // ---------------------------------------------------------------------------
 // URL (§14.5): child 1 is o/f (as in 1.1), children 2–4 are o2/f2 … o4/f4, and
 // gy is the number of children when more than one. Names and the active child
