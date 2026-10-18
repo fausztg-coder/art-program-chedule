@@ -31,4 +31,25 @@ A `?forras=minta` a `data/sample/` CSV-it a teljes élő feldolgozáson futtatja
 
 ## CORS
 
-A közzétett CSV-k böngészőből való letöltését (CORS) még nem ellenőriztük valódi táblázattal; ez a bekötéskor történik a `scripts/check-cors.html` oldallal. Az eredményt ide írjuk.
+A közzétett CSV-ket a böngésző közvetlenül tölti le a Google-tól (CORS). Ezt az élesítés után, 2026-09-26-án a megrendelő az élő oldalon ellenőrizte: az oldal működik, a táblázatból olvas. Ha egyszer mégsem sikerülne, az oldal a pillanatképre vált, és sárga sávban jelzi: „Az órarend nem frissült, a {dátum} állapotot látod.” Kézzel a `scripts/check-cors.html` oldallal lehet újra ellenőrizni.
+
+## Mi hol van
+
+| Fájl | Szerep |
+| --- | --- |
+| `index.html`, `css/tokens.css`, `css/app.css` | a képernyős oldal (SPEC 4.) |
+| `css/print.css`, `src/print-view.js` | a PDF-oldal (SPEC 6.) |
+| `src/csv.js`, `src/model.js` | CSV-elemzés, validálás, célzás, színek |
+| `src/state.js` | választás, szűrés, cím, Választható, URL, nyomtatási rács, szótagolás (tiszta függvények) |
+| `src/load.js` | letöltés, időkorlát, tartalék a pillanatképre |
+| `src/render.js`, `src/main.js`, `src/dom.js` | DOM és eseménykezelés |
+| `scripts/snapshot.mjs` | az éjszakai pillanatkép (ugyanazzal a validálóval) |
+| `docs/manual-checks.md` | kézi ellenőrzőlista négy böngészőre |
+| `docs/elfogadas.md` | a SPEC 8. szakaszának elfogadási pontjai és ellenőrzésük |
+| `docs/kezikonyv.md`, `docs/kezikonyv.pdf` | rövid használati útmutató a szülőknek (a PDF továbbküldhető) |
+
+## Tudnivalók a tábla szerkesztőjének
+
+- A tábla nyilvános: tanárnévből csak keresztnév kerüljön bele (SPEC 2.1).
+- Egy átírás kb. 5–10 perc múlva látszik az oldalon (a Google gyorsítótára miatt), újratöltés után; deploy nem kell.
+- A hibás sor kimarad, és az oldal alján az „Adathibák” panel mutatja a táblázatbeli sorszámmal. Ellentmondásos, de érvényes sornál a „Bizonytalan = igen” jelölést használd, a Megjegyzésbe írd az okát.
